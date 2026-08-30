@@ -18,6 +18,12 @@
 
 <sub>Todo lo de arriba salió de esta herramienta, en PNG con fondo transparente. El caballero y el árbol son fotogramas de sus animaciones.</sub>
 
+Para lograr la Pixelización de las imagenes originales generados por IA Generativa con el modelo Flux.2 Klein apliqué el algorítmo K-Means para representar la misma imagen y paleta de colores con gran detalle pero creando un pixeal Art de verdad, donde cada pixel debía representar los colores predominantes para generar el efecto deseado y permitiendo convertirla a formato PNG sin fondo mucho más facil y sin perder detalle. Realicé pruebas de otros algoritmos de agrupación de Machine learning y estos fueron los resultados:
+
+<img width="1396" height="812" alt="image-1787873664961" src="https://github.com/user-attachments/assets/882cb3a4-2a03-4000-beaf-0ee944f647b7" />
+
+
+
 Pipeline local para generar sprites pixel art detallados: PNG con fondo transparente, animaciones y sprite sheets con un estilo consistente entre todos ellos. Corre en tu propia GPU con herramientas gratuitas, sin servicios de pago ni suscripciones.
 
 [![Arquitectura de SpriteGen](docs/arquitectura.png)](docs/arquitectura.md)
