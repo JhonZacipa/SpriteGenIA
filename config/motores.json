@@ -1,0 +1,263 @@
+{
+  "default": "sdxl_pixelart",
+  "engines": [
+    {
+      "id": "sdxl_pixelart",
+      "label": "SDXL + Pixel Art XL · clásico",
+      "kind": "image",
+      "arch": "sdxl",
+      "description": "El clásico: estilo pixel art muy marcado vía LoRA. ~45 s por imagen.",
+      "files": {
+        "checkpoints": ["sd_xl_base_1.0.safetensors"],
+        "loras": ["pixel-art-xl.safetensors"]
+      },
+      "params": {
+        "checkpoint": "sd_xl_base_1.0.safetensors",
+        "lora": "pixel-art-xl.safetensors",
+        "lora_strength": 1.0,
+        "steps": 28,
+        "cfg": 7.5,
+        "sampler": "dpmpp_2m",
+        "scheduler": "karras",
+        "width": 1024,
+        "height": 1024
+      }
+    },
+    {
+      "id": "zimage_turbo",
+      "label": "Z-Image Turbo + Pixel LoRA · rápido",
+      "kind": "image",
+      "arch": "zimage",
+      "description": "6B destilado de Alibaba: ~8 pasos, dithering y proporciones de sprite muy limpios. Apache 2.0.",
+      "files": {
+        "diffusion_models": ["z_image_turbo_fp8_e4m3fn.safetensors|z_image_turbo_bf16.safetensors"],
+        "text_encoders": ["qwen_3_4b.safetensors"],
+        "vae": ["z_image_ae.safetensors"]
+      },
+      "params": {
+        "steps": 9,
+        "cfg": 1.0,
+        "shift": 3,
+        "sampler": "res_multistep",
+        "scheduler": "simple",
+        "width": 1024,
+        "height": 1024,
+        "lora": "pixel_art_style_z_image_turbo.safetensors",
+        "lora_strength": 0.9,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "klein4b",
+      "label": "FLUX.2 Klein 4B · calidad + edición",
+      "kind": "image",
+      "arch": "flux2",
+      "description": "Genera en 4 pasos y además EDITA con imagen de referencia (variaciones del mismo personaje). Apache 2.0.",
+      "files": {
+        "diffusion_models": ["flux-2-klein-4b-fp8.safetensors"],
+        "text_encoders": ["qwen_3_4b.safetensors"],
+        "vae": ["flux2-vae.safetensors"]
+      },
+      "params": {
+        "steps": 4,
+        "edit_steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "width": 1024,
+        "height": 1024,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "klein4b_nsfw",
+      "label": "FLUX.2 Klein 4B sin filtro · encoder abliterado",
+      "kind": "image",
+      "arch": "flux2",
+      "description": "El mismo Klein 4B con el text encoder abliterado (Apache 2.0): quita el filtro del prompt sin cambiar el modelo que dibuja. Licencia apta para uso comercial. Requiere la extensión ComfyUI-GGUF.",
+      "files": {
+        "diffusion_models": ["flux-2-klein-4b-fp8.safetensors"],
+        "text_encoders": ["qwen3-4b-abl-q4_0.gguf"],
+        "vae": ["flux2-vae.safetensors"]
+      },
+      "params": {
+        "steps": 4,
+        "edit_steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "width": 1024,
+        "height": 1024,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "klein9b_lab_q6",
+      "label": "FLUX.2 Klein 9B q6_k · LAB — NO COMERCIAL",
+      "kind": "image",
+      "arch": "flux2",
+      "description": "EXPERIMENTAL. Licencia FLUX Non-Commercial: sus imágenes no se pueden usar en proyectos comerciales. Encoder abliterado q6_k (6,3 GB): entra en 8 GB de VRAM, más rápido y con calidad casi idéntica al q8_0.",
+      "files": {
+        "diffusion_models": ["flux-2-klein-9b-fp8.safetensors"],
+        "text_encoders": ["flux2-klein-9b-uncensored-q6_k.gguf"],
+        "vae": ["flux2-vae.safetensors"]
+      },
+      "params": {
+        "steps": 4,
+        "edit_steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "width": 1024,
+        "height": 1024,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "klein9b_lab_q8",
+      "label": "FLUX.2 Klein 9B q8_0 · LAB — NO COMERCIAL",
+      "kind": "image",
+      "arch": "flux2",
+      "description": "EXPERIMENTAL. Licencia FLUX Non-Commercial: sus imágenes no se pueden usar en proyectos comerciales. Encoder abliterado q8_0 (8,1 GB): máxima fidelidad al prompt, pero no cabe en 8 GB de VRAM → algo más lento.",
+      "files": {
+        "diffusion_models": ["flux-2-klein-9b-fp8.safetensors"],
+        "text_encoders": ["flux2-klein-9b-uncensored-q8_0.gguf"],
+        "vae": ["flux2-vae.safetensors"]
+      },
+      "params": {
+        "steps": 4,
+        "edit_steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "width": 1024,
+        "height": 1024,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "klein9b_loras",
+      "label": "FLUX.2 Klein 9B + 3 LoRA · LAB — NO COMERCIAL",
+      "kind": "image",
+      "arch": "flux2",
+      "description": "EXPERIMENTAL. Klein 9B con encoder abliterado y tres LoRA encadenados (snofs, paizuri, deepthroat). Los LoRA se aplican SIEMPRE; usa sus palabras de activación en el prompt para reforzar cada concepto. Licencia FLUX Non-Commercial: no usable en proyectos comerciales.",
+      "files": {
+        "diffusion_models": ["flux-2-klein-9b-fp8.safetensors"],
+        "text_encoders": ["flux2-klein-9b-uncensored-q8_0.gguf|flux2-klein-9b-uncensored-q6_k.gguf"],
+        "vae": ["flux2-vae.safetensors"],
+        "loras": [
+          "klein_snofs_v1_4.safetensors",
+          "FK_paizuri.safetensors",
+          "klein-deepthroat-v2-5epoc-k3nk.safetensors"
+        ]
+      },
+      "params": {
+        "steps": 4,
+        "edit_steps": 8,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "width": 1024,
+        "height": 1024,
+        "pixelize_method": "box",
+        "loras": [
+          { "name": "klein_snofs_v1_4.safetensors", "strength": 0.7 },
+          { "name": "FK_paizuri.safetensors", "strength": 0.6 },
+          { "name": "klein-deepthroat-v2-5epoc-k3nk.safetensors", "strength": 0.6 }
+        ]
+      }
+    },
+    {
+      "id": "wan22_5b",
+      "label": "Wan 2.2 5B · video ligero",
+      "kind": "video",
+      "arch": "wan22",
+      "description": "Ligero y rápido, pero pierde el estilo pixel. Para pruebas.",
+      "files": {
+        "diffusion_models": ["wan2.2_ti2v_5B_fp16.safetensors"],
+        "text_encoders": ["umt5_xxl_fp8_e4m3fn_scaled.safetensors"],
+        "vae": ["wan2.2_vae.safetensors"]
+      },
+      "params": {
+        "steps": 20,
+        "cfg": 5.0,
+        "shift": 8,
+        "sampler": "uni_pc",
+        "scheduler": "simple",
+        "weight_dtype": "default",
+        "width": 704,
+        "height": 704,
+        "length": 81,
+        "fps": 24,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "wan22_14b_pixel",
+      "label": "Wan 2.2 14B · animación pixel art",
+      "kind": "video",
+      "arch": "wan22_moe",
+      "description": "El mejor para animar sprites: 14B con LoRA de pixel art. Sale pixelizado y con paleta compartida.",
+      "files": {
+        "diffusion_models": [
+          "Wan2.2-I2V-A14B-HighNoise-Q5_K_M.gguf|Wan2.2-I2V-A14B-HighNoise-Q8_0.gguf|Wan2.2-I2V-A14B-HighNoise-Q4_K_M.gguf",
+          "Wan2.2-I2V-A14B-LowNoise-Q5_K_M.gguf|Wan2.2-I2V-A14B-LowNoise-Q8_0.gguf|Wan2.2-I2V-A14B-LowNoise-Q4_K_M.gguf"
+        ],
+        "text_encoders": ["umt5_xxl_fp8_e4m3fn_scaled.safetensors"],
+        "vae": ["wan_2.1_vae.safetensors"],
+        "loras": [
+          "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+          "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
+          "wan2.2_pixel_animate.safetensors"
+        ]
+      },
+      "params": {
+        "steps": 4,
+        "boundary_step": 2,
+        "cfg": 1.0,
+        "shift": 5,
+        "sampler": "euler",
+        "scheduler": "simple",
+        "width": 640,
+        "height": 640,
+        "length": 81,
+        "fps": 16,
+        "lora_high": "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+        "lora_low": "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
+        "lora": "wan2.2_pixel_animate.safetensors",
+        "lora_strength": 1.0,
+        "pixelize_method": "box"
+      }
+    },
+    {
+      "id": "wan22_14b_free",
+      "label": "Wan 2.2 14B · video libre (sin pixel art)",
+      "kind": "video",
+      "arch": "wan22_moe",
+      "description": "El mismo 14B sin estilo ni pixelizado: anima cualquier imagen y guarda el clip tal cual, en 832×480.",
+      "files": {
+        "diffusion_models": [
+          "Wan2.2-I2V-A14B-HighNoise-Q5_K_M.gguf|Wan2.2-I2V-A14B-HighNoise-Q8_0.gguf|Wan2.2-I2V-A14B-HighNoise-Q4_K_M.gguf",
+          "Wan2.2-I2V-A14B-LowNoise-Q5_K_M.gguf|Wan2.2-I2V-A14B-LowNoise-Q8_0.gguf|Wan2.2-I2V-A14B-LowNoise-Q4_K_M.gguf"
+        ],
+        "text_encoders": ["umt5_xxl_fp8_e4m3fn_scaled.safetensors"],
+        "vae": ["wan_2.1_vae.safetensors"],
+        "loras": [
+          "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+          "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors"
+        ]
+      },
+      "params": {
+        "steps": 4,
+        "boundary_step": 2,
+        "cfg": 1.0,
+        "shift": 5,
+        "sampler": "euler",
+        "scheduler": "simple",
+        "width": 1024,
+        "height": 576,
+        "length": 81,
+        "fps": 16,
+        "lora_high": "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+        "lora_low": "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
+        "raw_output": true,
+        "raw_prompt": true
+      }
+    }
+  ]
+}

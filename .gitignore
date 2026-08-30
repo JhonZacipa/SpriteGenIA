@@ -1,0 +1,67 @@
+# ---------------------------------------------------------------------------
+# SpriteGen — .gitignore
+# Regla general: NO se versiona nada pesado ni regenerable (modelos de IA,
+# imágenes generadas, entornos virtuales). Sí se versiona el código, la
+# configuración, los esqueletos de pose y los assets de la GUI.
+# ---------------------------------------------------------------------------
+
+# Entornos virtuales y caché de Python
+.venv/
+ComfyUI/.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# ComfyUI completo (repo clonado + modelos, decenas de GB)
+ComfyUI/
+
+# Modelos de IA sueltos, estén donde estén (red de seguridad)
+*.safetensors
+*.ckpt
+*.gguf
+*.pt
+*.pth
+*.bin
+*.onnx
+
+# TODO lo generado: sprites, raws, animaciones, terrenos, tilesets, metadatos
+output/
+
+# Estado local de la vista (interruptor «ver ocultos»): es preferencia de
+# cada equipo, no configuración del proyecto. estilo.json y motores.json SÍ
+# se versionan.
+config/vista.json
+
+# Caché de vistas previas de los ciclos de pose (se regenera sola)
+assets/poses/_previews/
+
+# Logs, locks y temporales
+*.log
+*.lock
+*.tmp
+
+# Descargas de modelos a medias (el gestor de modelos escribe a .part y
+# renombra al terminar; una descarga cortada dejaría el fragmento)
+*.part
+*.crdownload
+
+# Credenciales, por si alguna vez se guarda un token de HuggingFace/Civitai
+.env
+*.token
+config/tokens.json
+
+# Artefactos de herramientas de desarrollo
+.playwright-mcp/
+.claude/settings.local.json
+
+# Guia interna de Claude Code: contiene el contexto del autor (destino de
+# los assets, hardware, decisiones) y los gotchas del proyecto. Se queda en
+# local a proposito. Ojo: al no versionarse, git tampoco lo respalda.
+CLAUDE.md
+
+# Sistema operativo y editores
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,15 @@
+{
+  "prompt_template": "pixel art, {subject}, detailed pixel art game asset, crisp clean pixels, flat shading, limited color palette, centered composition, isolated on a plain white background",
+  "negative_prompt": "blurry, smooth gradients, photorealistic, 3d render, photograph, soft edges, anti-aliasing, depth of field, bokeh, watermark, text, signature, frame, border, cropped, out of frame, shadow, drop shadow, shadow on ground, cast shadow, reflection",
+  "checkpoint": "sd_xl_base_1.0.safetensors",
+  "lora": "pixel-art-xl.safetensors",
+  "lora_strength": 1.0,
+  "width": 1024,
+  "height": 1024,
+  "steps": 28,
+  "cfg": 7.5,
+  "sampler": "dpmpp_2m",
+  "scheduler": "karras",
+  "bg_removal_threshold": 60,
+  "remove_shadow": true
+}

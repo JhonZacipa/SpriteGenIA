@@ -1,0 +1,21 @@
+# Dependencias del venv del PROYECTO (.venv): el que ejecuta la GUI, el
+# servidor y la CLI. NO es el venv de ComfyUI (ComfyUI/.venv, con torch para
+# CUDA), que se instala aparte -- ver "Puesta en marcha" en README.md.
+#
+#   python -m venv .venv
+#   .venv\Scripts\python.exe -m pip install -r requirements.txt
+#
+# Versiones exactas verificadas en Windows 11 + Python 3.13.13 (agosto 2026).
+# Las dependencias indirectas (starlette, anyio, urllib3...) las resuelve pip
+# solo; aqui van unicamente las que el codigo importa de verdad.
+
+pillow==12.3.0     # abrir/guardar PNG, GIF y WebP animado (pixelize, sheet, effects)
+numpy==2.5.2       # todo el procesado por pixel: fondo, sombras, cuantizacion, k-means
+requests==2.34.2   # HTTP contra ComfyUI (127.0.0.1:8188) y subida de imagenes
+fastapi==0.141.1   # API local del servidor (app/server.py)
+uvicorn==0.52.4    # servidor ASGI que sirve la GUI en 127.0.0.1:8787
+pydantic==2.13.4   # validacion de los cuerpos JSON de la API
+
+# Nota: si tu .venv trae ademas scikit-learn, scipy, joblib, threadpoolctl o
+# narwhals, son restos de una instalacion antigua. El k-means de pixelize.py
+# esta escrito a mano con numpy: el proyecto no importa ninguna de esas.

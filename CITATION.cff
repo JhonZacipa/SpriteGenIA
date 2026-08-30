@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: SpriteGenIA
+abstract: "Local AI pixel art sprite generator: transparent PNGs, animations and sprite sheets ready for Godot, Unity and any 2D engine. Runs on your own GPU, no API keys."
+type: software
+authors:
+  - family-names: Zacipa
+    given-names: Jhon
+license: Apache-2.0
+repository-code: "https://github.com/JhonZacipa/SpriteGenIA"
+url: "https://github.com/JhonZacipa/SpriteGenIA"
+version: 1.0.0
+date-released: "2026-08-30"
+keywords:
+  - pixel-art
+  - sprite-generator
+  - game-assets
+  - spritesheet
+  - comfyui
+  - stable-diffusion
+  - godot
+  - 2d-game-development
+  - local-first
