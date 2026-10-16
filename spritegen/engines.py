@@ -13,9 +13,14 @@ ComfyUI para cada arquitectura:
 - wan22_moe : Wan 2.2 I2V A14B, imagen→video con MoE de DOS expertos
            (high noise + low noise) que se muestrean en cadena con dos
            KSamplerAdvanced. Nunca están los dos en memoria a la vez.
+- trellis2 / pixal3d : imagen→malla 3D texturizada (GLB), nodos nativos de
+           ComfyUI: tres muestreos encadenados (estructura, forma, textura)
+           y el postproceso de malla (remesh, decimado, UV, horneado PBR).
 
 Las recetas provienen de los blueprints oficiales incluidos en el propio
-ComfyUI instalado, así que los class_type coinciden con esta versión.
+ComfyUI instalado, así que los class_type coinciden con esta versión. La de
+3D sale de la plantilla 3d_pixal3d_trellis2_image_to_model.json (paquete
+comfyui-workflow-templates), que la versión instalada aún no trae.
 """
 
 from __future__ import annotations
@@ -354,6 +359,156 @@ def _wan22_moe_graph(
     wf["save"] = {"class_type": "SaveImage",
                   "inputs": {"images": ["decode", 0],
                              "filename_prefix": "spritegen_video"}}
+    return wf
+
+
+def build_model3d_graph(
+    engine: dict[str, Any],
+    image_name: str,
+    seed: int,
+    faces: int,
+    texture: int,
+    mask_from_alpha: bool = False,
+    remesh: int | None = None,
+) -> dict[str, Any]:
+    """Imagen → malla 3D texturizada con TRELLIS.2 o Pixal3D nativos.
+
+    Receta de la plantilla oficial con dos recortes MEDIDOS en 16 GB de VRAM
+    (ComfyUI 0.33): la cascada de forma va a 1024 (a 1536 el upsample tarda
+    26 s por paso) y el remallado a 512 (a 768 RemeshMesh agota la VRAM). Sin
+    remallado sale peor y tarda más: decimar la malla del VAE cuesta 2 min.
+
+    Devuelve dos salidas: `save` (el GLB) y `thumb` (miniatura RGBA en vista
+    isométrica para el archivo; RenderMesh no ilumina, solo sirve de vista).
+
+    mask_from_alpha: la imagen ya trae el sujeto recortado en su canal alfa.
+    Si no, BiRefNet separa el sujeto del fondo dentro del propio grafo.
+    remesh: resolución del remallado; por defecto la del motor (el llamador
+    la baja para reintentar tras un OOM).
+    """
+    arch = engine["arch"]
+    if arch not in ("trellis2", "pixal3d"):
+        raise ValueError(f"Arquitectura 3D no soportada: {arch}")
+    p = engine["params"]
+    files = engine["files"]
+    unet = resolve_file("diffusion_models", files["diffusion_models"][0])
+    vae_shape = resolve_file("vae", files["vae"][0])
+    vae_tex = resolve_file("vae", files["vae"][1])
+    clip_vision = resolve_file("clip_vision", files["clip_vision"][0])
+
+    wf: dict[str, Any] = {}
+
+    def node(key: str, cls: str, **inputs: Any) -> list:
+        wf[key] = {"class_type": cls, "inputs": inputs}
+        return [key, 0]
+
+    node("clipv", "CLIPVisionLoader", clip_name=clip_vision)
+    node("unet", "UNETLoader", unet_name=unet, weight_dtype="default")
+    node("vae_shape", "VAELoader", vae_name=vae_shape)
+    node("vae_tex", "VAELoader", vae_name=vae_tex)
+    node("load", "LoadImage", image=image_name)
+    if mask_from_alpha:
+        # LoadImage devuelve la máscara INVERTIDA (1 = transparente, la
+        # convención del inpainting): ImageCropToMask la quiere al revés
+        mask = node("mask", "InvertMask", mask=["load", 1])
+    else:
+        node("bg_model", "LoadBackgroundRemovalModel",
+             bg_removal_name=resolve_file("background_removal",
+                                          files["background_removal"][0]))
+        mask = node("mask", "RemoveBackground", bg_removal_model=["bg_model", 0],
+                    image=["load", 0])
+    node("crop", "ImageCropToMask", images=["load", 0], masks=mask, width=1024,
+         height=1024, pad_factor=float(p.get("pad_factor", 1.0)), grow_mask=0,
+         background="#000000")
+    if arch == "trellis2":
+        node("cond", "Trellis2Conditioning", clip_vision_model=["clipv", 0],
+             image=["crop", 0])
+    else:
+        node("cond", "Pixal3DConditioning", clip_vision_model=["clipv", 0],
+             image=["crop", 0], camera_angle_x=float(p.get("fov", 49.13)))
+    pos, neg = ["cond", 0], ["cond", 1]
+
+    # 1 · Estructura dispersa (voxel 32: con "64" el upsample saca «cortinas»).
+    # CFGOverride + RescaleCFG replican el guidance interval del pipeline original
+    node("cfg_ss", "CFGOverride", model=["unet", 0], cfg=1.0, start_percent=0.667,
+         end_percent=1.0)
+    node("rescale_ss", "RescaleCFG", model=["cfg_ss", 0], multiplier=0.7)
+    node("shift_ss", "ModelSamplingSD3", model=["rescale_ss", 0], shift=5.0)
+    node("latent_ss", "EmptyTrellis2LatentStructure", batch_size=1)
+    node("k_ss", "KSampler", model=["shift_ss", 0], positive=pos, negative=neg,
+         latent_image=["latent_ss", 0], seed=seed, steps=12, cfg=7.5,
+         sampler_name="euler", scheduler="normal", denoise=1.0)
+    node("dec_ss", "VaeDecodeStructureTrellis2", samples=["k_ss", 0],
+         vae=["vae_shape", 0], resolution="32")
+
+    # 2 · Forma a 512 y cascada a la resolución final
+    node("stage_shape", "Trellis2ShapeStage", positive=pos, negative=neg,
+         voxel=["dec_ss", 0])
+    node("cfg_sh", "CFGOverride", model=["unet", 0], cfg=1.0, start_percent=0.769,
+         end_percent=1.0)
+    node("rescale_sh", "RescaleCFG", model=["cfg_sh", 0], multiplier=0.5)
+    node("k_sh", "KSampler", model=["rescale_sh", 0], positive=["stage_shape", 0],
+         negative=["stage_shape", 1], latent_image=["stage_shape", 2], seed=seed,
+         steps=20, cfg=7.5, sampler_name="euler", scheduler="normal", denoise=1.0)
+    node("up", "Trellis2UpsampleStage", positive=["stage_shape", 0],
+         negative=["stage_shape", 1], shape_latent=["k_sh", 0], vae=["vae_shape", 0],
+         target_resolution=int(p.get("cascade", 1024)))
+    node("k_up", "KSampler", model=["rescale_sh", 0], positive=["up", 0],
+         negative=["up", 1], latent_image=["up", 2], seed=seed, steps=12, cfg=7.5,
+         sampler_name="euler", scheduler="simple", denoise=1.0)
+    node("dec_sh", "VaeDecodeShapeTrellis", samples=["k_up", 0], vae=["vae_shape", 0])
+
+    # 3 · Textura, a cfg 1 (como en la plantilla)
+    node("stage_tex", "Trellis2TextureStage", positive=["up", 0], negative=["up", 1],
+         shape_latent=["k_up", 0])
+    node("k_tex", "KSampler", model=["unet", 0], positive=["stage_tex", 0],
+         negative=["stage_tex", 1], latent_image=["stage_tex", 2], seed=seed,
+         steps=12, cfg=1.0, sampler_name="euler", scheduler="normal", denoise=1.0)
+    node("dec_tex", "VaeDecodeTextureTrellis", samples=["k_tex", 0],
+         vae=["vae_tex", 0], shape_subdivides=["dec_sh", 1])
+
+    # 4 · Postproceso: remallado → decimado → UV → horneado PBR, relieve y AO.
+    # Las DynamicCombo viajan en la API como "campo" + "campo.subcampo"
+    # precluster_max_verts reduce la malla del VAE antes de remallar: su consumo
+    # crece con ella, y con 20 M (el valor de la plantilla) una casa en calidad
+    # «detalle» agotó la VRAM incluso remallando a 512
+    node("remesh", "RemeshMesh", mesh=["dec_sh", 0],
+         resolution=int(remesh or p.get("remesh", 512)),
+         sign_mode="udf", band=1.0, project_back=0.0, fix_poles=False, smooth_iters=20,
+         drop_small_components=0.01,
+         precluster_max_verts=int(p.get("remesh_precluster", 20_000_000)),
+         **{"sign_mode.qef": False, "sign_mode.drop_inverted_components": False,
+            "sign_mode.drop_enclosed_components": False})
+    node("decimate", "DecimateMesh", mesh=["remesh", 0], target_face_count=int(faces),
+         placement_mode="midpoint")
+    node("smooth", "MeshSmoothNormals", mesh=["decimate", 0], crease_angle=180.0)
+    node("unwrap", "UnwrapMesh", mesh=["smooth", 0], segmenter="pec",
+         resolution=int(texture), padding=1, weld_distance=0.0002)
+    # reference_mesh: proyecta cada texel sobre la superficie densa antes de
+    # muestrear el color, para que la malla decimada no salga facetada
+    node("bake", "BakeTextureFromVoxel", mesh=["unwrap", 0], voxel_colors=["dec_tex", 0],
+         texture_size=int(texture), reference_mesh=["dec_sh", 0])
+    node("normal", "BakeNormalMapFromMesh", low_poly=["unwrap", 0], high_poly=["remesh", 0],
+         resolution=min(2048, int(texture)), cage_distance=0.05, ignore_backfaces=True)
+    node("ao", "BakeAmbientOcclusion", low_poly=["unwrap", 0], high_poly=["remesh", 0],
+         resolution=min(1024, int(texture)), samples=64, max_distance=0.71,
+         strength=1.0, bias=0.01)
+    node("apply", "ApplyTextureToMesh", mesh=["unwrap", 0], base_color=["bake", 0],
+         metallic=["bake", 1], roughness=["bake", 2], occlusion=["ao", 0],
+         normal_map=["normal", 0])
+    node("final", "MeshSmoothNormals", mesh=["apply", 0], crease_angle=180.0)
+    node("save", "SaveGLB", mesh=["final", 0], filename_prefix="spritegen3d/modelo")
+
+    # Miniatura para el archivo: girado 45° y elevado 30°, la vista isométrica
+    node("rot_y", "RotateMesh", mesh=["final", 0], mode="euler_xyz",
+         **{"mode.angle_x": 0.0, "mode.angle_y": 45.0, "mode.angle_z": 0.0})
+    node("rot_x", "RotateMesh", mesh=["rot_y", 0], mode="euler_xyz",
+         **{"mode.angle_x": 30.0, "mode.angle_y": 0.0, "mode.angle_z": 0.0})
+    node("render", "RenderMesh", mesh=["rot_x", 0], mode="texture", width=512,
+         height=512, background="#000000")
+    node("thumb_alpha", "InvertMask", mask=["render", 1])
+    node("thumb_rgba", "JoinImageWithAlpha", image=["render", 0], alpha=["thumb_alpha", 0])
+    node("thumb", "SaveImage", images=["thumb_rgba", 0], filename_prefix="spritegen3d/miniatura")
     return wf
 
 

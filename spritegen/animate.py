@@ -259,6 +259,9 @@ def animate_sprite(
         "kind": "animation",
         "subject": subject,
         "anim": anim,
+        # El flujo de esqueleto es siempre-SDXL (ControlNet OpenPose):
+        # no es un motor elegible, pero sí un dato cierto del resultado
+        "engine": "sdxl_pixelart",
         "seed": seed,
         "frames": total,
         "sprite": gif_path.name,

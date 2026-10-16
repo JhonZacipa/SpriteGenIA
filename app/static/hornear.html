@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpriteGen · horneado 3D</title>
+<!-- Página de servicio para `spritegen bake3d`: la abre un Chrome sin ventana
+     y hornea con EXACTAMENTE el mismo código que la hoja 3D de la GUI
+     (visor3d.planHorneado y visor3d.hornearPieza). Los ajustes llegan en la
+     query; el resultado lo recoge la CLI evaluando window.resultado. -->
+<script type="importmap">
+{ "imports": {
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<style>
+  body { margin: 0; background: #151310; color: #efe9dc; font: 13px/1.5 system-ui, sans-serif; }
+  #host { width: 256px; height: 256px; }
+  #estado { padding: 8px 12px; }
+</style>
+</head>
+<body>
+<div id="host"></div>
+<p id="estado">Horneando…</p>
+<script type="module">
+  const q = new URLSearchParams(location.search);
+  const num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
+  window.resultado = (async () => {
+    // Mismo token que el import de app.js: los dos piden el mismo módulo
+    const v = await import("./visor3d.js?v=20261016f");
+    const pieza = { id: q.get("id"), model_url: q.get("url"), yaw: num("yaw", 0) };
+    if (!pieza.id || !pieza.model_url) throw new Error("Faltan id y url del modelo en la query");
+    const vista = q.get("vista") || "iso";
+    v.vista(vista);
+    await v.mostrar(document.getElementById("host"), pieza.model_url);
+    const meta = await v.hornearPieza(pieza, {
+      vista,
+      direcciones: num("direcciones", 4),
+      modo: q.get("modo") || "tiles",
+      tiles: num("tiles", 2),
+      tilePx: num("tile_px", 64),
+      rejilla: num("rejilla", 192),
+      luz: q.get("luz") || "dia",
+      colores: num("colores", 32),
+      escala: num("escala", 6),
+      paleta: q.get("paleta") === "1",
+    });
+    v.ocultar();
+    return { id: meta.id, kind: meta.kind, frames: meta.frames || 1, native: meta.native };
+  })();
+  const estado = document.getElementById("estado");
+  window.resultado.then(
+    (r) => { estado.textContent = `Listo: ${r.id}`; },
+    (e) => { estado.textContent = `Error: ${e.message || e}`; },
+  );
+</script>
+</body>
+</html>

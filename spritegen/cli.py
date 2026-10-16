@@ -12,6 +12,22 @@ from spritegen.pixelize import count_colors, pixelize
 from spritegen.sheet import make_sheet
 
 
+def _cmd_import(args: argparse.Namespace) -> None:
+    """Espejo del botón «Importar» de la GUI: cada imagen entra al historial tal cual."""
+    from spritegen.importer import import_file
+
+    rutas: list[str] = []
+    for patron in args.images:
+        rutas.extend(sorted(glob.glob(patron)) or [patron])
+    for ruta in rutas:
+        try:
+            stem = import_file(Path(ruta), subject=args.subject)
+        except (OSError, ValueError) as exc:
+            print(f"✘ {ruta}: {type(exc).__name__}: {exc}", file=sys.stderr)
+            continue
+        print(f"✔ {ruta} -> output/{stem}.png")
+
+
 def _cmd_generate(args: argparse.Namespace) -> None:
     # Import perezoso: requiere `requests` y solo aplica con ComfyUI instalado
     from spritegen.generate import generate_sprite
@@ -103,6 +119,82 @@ def _cmd_effect(args: argparse.Namespace) -> None:
                               frames=args.frames or 8)
         export_effect(frames, name="smoke", fps=8, scale=args.scale,
                       subject="humo de chimenea")
+
+
+def _cmd_model3d(args: argparse.Namespace) -> None:
+    """Espejo de la hoja «3D» de la GUI. Acepta el id de un sprite del
+    historial (parte de su imagen original de IA) o la ruta de una imagen."""
+    import json
+
+    from spritegen.model3d import META_DIR, OUTPUT_DIR, image_to_model
+
+    ruta = Path(args.entrada)
+    ficha = META_DIR / f"{Path(args.entrada).name}.json"
+    if ficha.exists():
+        meta = json.loads(ficha.read_text(encoding="utf-8"))
+        if meta.get("kind", "sprite") != "sprite" or not meta.get("raw"):
+            raise SystemExit(f"'{args.entrada}' no es un sprite con imagen original de IA")
+        base, subject, source = OUTPUT_DIR / "raw" / meta["raw"], meta["subject"], ficha.stem
+    elif ruta.is_file():
+        base, subject, source = ruta, args.subject or ruta.stem, None
+    else:
+        raise SystemExit(f"No existe el sprite '{args.entrada}' en el historial ni ese archivo")
+    stem = image_to_model(base, subject=subject, engine_id=args.engine,
+                          quality=args.quality, seed=args.seed, source_id=source,
+                          server=args.server)
+    print(f"✔ output/models/{stem}.glb · miniatura en output/{stem}.png")
+
+
+def _cmd_bake3d(args: argparse.Namespace) -> None:
+    """Espejo del botón «Hornear sprites» de la hoja 3D. El render es WebGL,
+    así que lo pinta la misma página que la GUI en un Chrome sin ventana
+    (spritegen/headless.py); el servidor solo pixeliza."""
+    import json
+    from urllib.parse import urlencode
+
+    from spritegen.headless import navegador, servidor_gui
+    from spritegen.model3d import META_DIR
+
+    ficha = META_DIR / f"{Path(args.modelo).name}.json"
+    if not ficha.exists():
+        raise SystemExit(f"No existe el modelo '{args.modelo}' en el historial")
+    meta = json.loads(ficha.read_text(encoding="utf-8"))
+    if meta.get("kind") != "model3d" or not meta.get("model"):
+        raise SystemExit(f"'{args.modelo}' no es un modelo 3D (genera uno con `spritegen model3d`)")
+    # La orientación es del modelo (la guarda la GUI); --yaw la cambia solo aquí
+    yaw = args.yaw if args.yaw is not None else int(meta.get("yaw") or 0)
+    query = urlencode({
+        "id": ficha.stem, "url": f"/output/models/{meta['model']}", "yaw": yaw,
+        "vista": args.view, "direcciones": args.directions, "modo": args.scale_mode,
+        "tiles": args.tiles, "tile_px": args.tile_px, "rejilla": args.native,
+        "luz": args.light, "colores": args.colors, "escala": args.scale,
+        "paleta": "1" if args.palette else "0",
+    })
+    print(f"Horneando {args.directions} dirección(es) de '{meta['subject'][:60]}' "
+          f"(vista {args.view}, orientación {yaw}°) en un navegador sin ventana...")
+    try:
+        with servidor_gui(args.gui) as base:
+            with navegador(f"{base}/hornear.html?{query}", ruta=args.browser) as pagina:
+                pagina.esperar("typeof window.resultado === 'object'", timeout=30)
+                r = pagina.evaluar("window.resultado", timeout=args.timeout)
+    except RuntimeError as exc:
+        raise SystemExit(f"✘ {exc}")
+    nueva = json.loads((META_DIR / f"{r['id']}.json").read_text(encoding="utf-8"))
+    print(f"✔ {r['kind']} '{r['id']}' · {r['frames']} dirección(es) de {r['native']} px")
+    print(f"  output/{nueva['sprite']}" + (f" · output/{nueva['sheet']}" if nueva.get("sheet") else ""))
+
+
+def _cmd_web3d(args: argparse.Namespace) -> None:
+    """Espejo del botón «Crear versión web» de la hoja 3D."""
+    from spritegen.web3d import web_version
+
+    try:
+        meta = web_version(args.modelo, args.preset)
+    except (ValueError, RuntimeError) as exc:
+        raise SystemExit(f"✘ {exc}")
+    v = meta["web"][args.preset]
+    print(f"✔ output/models/{v['file']} · {v['mb']} MB · {v['faces']} triángulos · "
+          f"texturas de {v['texture']} px")
 
 
 def _cmd_engines(args: argparse.Namespace) -> None:
@@ -391,6 +483,49 @@ def main() -> None:
     p.add_argument("--server", default="http://127.0.0.1:8188", help="URL del servidor ComfyUI")
     p.set_defaults(func=_cmd_animate_queue)
 
+    p = sub.add_parser("model3d", help="Convertir una imagen en un modelo 3D texturizado (GLB)")
+    p.add_argument("entrada",
+                   help="Id de un sprite del historial (usa su imagen original de IA) o ruta "
+                        "de una imagen. Mejor la imagen suave que el sprite pixelizado")
+    p.add_argument("--engine", default="trellis2", help="Motor 3D (ver `engines`): trellis2 | pixal3d_lab")
+    p.add_argument("--quality", choices=["juego", "detalle"], default=None,
+                   help="juego: 60 000 caras y textura 1024 (def.) · detalle: 200 000 caras y 2048")
+    p.add_argument("--subject", help="Con una ruta: descripción para la ficha (def. el nombre del archivo)")
+    p.add_argument("--seed", type=int, help="Semilla fija")
+    p.add_argument("--server", default="http://127.0.0.1:8188", help="URL del servidor ComfyUI")
+    p.set_defaults(func=_cmd_model3d)
+
+    p = sub.add_parser("bake3d", help="Hornear un modelo 3D a sprites (direcciones, vista, escala por tiles)")
+    p.add_argument("modelo", help="Id de un modelo 3D del historial (ver `spritegen model3d`)")
+    p.add_argument("--directions", type=int, choices=[1, 4, 8, 16], default=4,
+                   help="1 = un sprite · 4/8/16 = hoja con una dirección por fotograma (def. 4)")
+    p.add_argument("--view", choices=["iso", "iso_real", "tres_cuartos", "cenital", "frente"],
+                   default="iso", help="iso 2:1 (30°) · iso_real (35°) · tres_cuartos (45°) · "
+                                       "cenital (60°) · frente (0°) (def. iso)")
+    p.add_argument("--scale-mode", dest="scale_mode", choices=["tiles", "rejilla"], default="tiles",
+                   help="tiles: la planta ocupa --tiles tiles · rejilla: el lado mayor mide --native")
+    p.add_argument("--tiles", type=float, default=2, help="Tiles que ocupa la planta del objeto (def. 2)")
+    p.add_argument("--tile-px", dest="tile_px", type=int, default=64,
+                   help="Ancho de un tile en px de rejilla; en isométrica, el del rombo (def. 64)")
+    p.add_argument("--native", type=int, default=192, help="Con --scale-mode rejilla: lado mayor (def. 192)")
+    p.add_argument("--light", choices=["dia", "atardecer", "noche"], default="dia", help="Luz (def. dia)")
+    p.add_argument("--yaw", type=int, choices=[0, 90, 180, 270],
+                   help="Orientación solo para este horneado (def. la guardada en el modelo)")
+    p.add_argument("--colors", type=int, default=32, help="Colores de la paleta común (def. 32)")
+    p.add_argument("--scale", type=int, default=6, help="Reescalado nítido del PNG final (def. 6)")
+    p.add_argument("--palette", action="store_true", help="Usar la paleta global del proyecto")
+    p.add_argument("--browser", help="Ruta de Chrome o Edge (def. se busca solo)")
+    p.add_argument("--gui", default="http://127.0.0.1:8787",
+                   help="Servidor de la GUI a usar si está abierto; si no, se levanta uno temporal")
+    p.add_argument("--timeout", type=float, default=300, help="Segundos máximos del horneado (def. 300)")
+    p.set_defaults(func=_cmd_bake3d)
+
+    p = sub.add_parser("web3d", help="Versión web de un modelo 3D: GLB ligero para Three.js (gltf-transform)")
+    p.add_argument("modelo", help="Id de un modelo 3D del historial")
+    p.add_argument("--preset", choices=["web", "ligero"], default="web",
+                   help="web: texturas de 1024 px (def.) · ligero: 512 px y la mitad de caras")
+    p.set_defaults(func=_cmd_web3d)
+
     p = sub.add_parser("terrain", help="Generar un terreno: variantes de tile seamless de 64px")
     p.add_argument("subject", help='Textura, ej: "dense green grass" o "dry dirt ground"')
     p.add_argument("--seed", type=int, help="Semilla fija")
@@ -424,6 +559,11 @@ def main() -> None:
     p.add_argument("--anchor", choices=["left", "top"], default="left",
                    help="wave: amarre al mástil (left) o colgante (top)")
     p.set_defaults(func=_cmd_effect)
+
+    p = sub.add_parser("import", help="Añadir imágenes propias al historial, tal cual (para animarlas o variarlas)")
+    p.add_argument("images", nargs="+", help="Imágenes PNG/JPG/WebP… (admite comodines)")
+    p.add_argument("--subject", help="Descripción para la ficha (por defecto, el nombre del archivo)")
+    p.set_defaults(func=_cmd_import)
 
     p = sub.add_parser("pixelize", help="Convertir una imagen en pixel art real")
     p.add_argument("input", help="Imagen de entrada (PNG/JPG/WebP...)")

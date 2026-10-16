@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-import ctypes
+import base64
+import binascii
+import io
 import json
 import shutil
 import subprocess
-import sys
 import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel, Field
@@ -44,9 +45,14 @@ from spritegen.generate import (
     server_alive,
     unique_stem,
 )
+from spritegen.importer import import_image
+from spritegen.livefeed import LIVE
+from spritegen.model3d import MODELS_DIR, bake_sprites, image_to_model
+from spritegen.ocultos import set_os_hidden, write_meta_file
 from spritegen.palette import extract_palette, load_palette, save_palette
 from spritegen.poses import ANIMATIONS, ASSETS_DIR, ensure_poses
 from spritegen.terrain import TERRAIN_DIR, build_tileset, generate_terrain, list_terrains
+from spritegen.web3d import web_version
 
 CONFIG_PATH = PROJECT_ROOT / "config" / "estilo.json"
 # Estado de la VISTA (no del estilo): si el historial destapa los elementos
@@ -85,43 +91,9 @@ def generation_lock():
 
 # ---------- Ocultar contenidos ----------
 # Un elemento marcado con `hidden` desaparece del historial de la GUI Y sus
-# archivos quedan marcados como ocultos para el Explorador de Windows.
-
-FILE_ATTRIBUTE_HIDDEN = 0x02
-_INVALID_ATTRS = 0xFFFFFFFF
-_K32 = None
-
-
-def _kernel32():
-    """kernel32 con las firmas declaradas. Sin declarar el restype unsigned,
-    el 0xFFFFFFFF que devuelve GetFileAttributesW al fallar llegaría como -1."""
-    global _K32
-    if _K32 is None and sys.platform == "win32":
-        _K32 = ctypes.windll.kernel32
-        _K32.GetFileAttributesW.argtypes = [ctypes.c_wchar_p]
-        _K32.GetFileAttributesW.restype = ctypes.c_uint32
-        _K32.SetFileAttributesW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32]
-    return _K32
-
-
-def _set_os_hidden(path: Path, on: bool) -> None:
-    """Marca o desmarca un archivo/carpeta como oculto para el Explorador.
-    Preserva el resto de atributos (los del proyecto llevan ARCHIVE y
-    NOT_CONTENT_INDEXED) en vez de pisarlos con FILE_ATTRIBUTE_NORMAL.
-    No-op silencioso fuera de Windows o si la ruta ya no existe: esconder es un
-    extra y nunca debe tumbar la petición."""
-    k32 = _kernel32()
-    if k32 is None or not path.exists():
-        return
-    try:
-        attrs = k32.GetFileAttributesW(str(path))
-        if attrs == _INVALID_ATTRS:
-            return
-        nuevos = attrs | FILE_ATTRIBUTE_HIDDEN if on else attrs & ~FILE_ATTRIBUTE_HIDDEN
-        if nuevos != attrs:
-            k32.SetFileAttributesW(str(path), nuevos)
-    except OSError:
-        pass
+# archivos quedan marcados como ocultos para el Explorador de Windows. El
+# manejo del atributo vive en spritegen/ocultos.py, compartido con la CLI.
+_set_os_hidden = set_os_hidden
 
 
 def _item_paths(meta: dict, stem: str) -> list[Path]:
@@ -136,6 +108,12 @@ def _item_paths(meta: dict, stem: str) -> list[Path]:
         rutas.append(OUTPUT_DIR / "raw" / Path(meta["raw"]).name)
     if meta.get("video"):
         rutas.append(OUTPUT_DIR / "raw" / Path(meta["video"]).name)
+    if meta.get("model"):
+        rutas.append(MODELS_DIR / Path(meta["model"]).name)
+    # Versiones web del modelo (output/models/<stem>_<calidad>.glb)
+    for version in (meta.get("web") or {}).values():
+        if version.get("file"):
+            rutas.append(MODELS_DIR / Path(version["file"]).name)
     frames_dir = OUTPUT_DIR / "frames" / stem
     if frames_dir.is_dir():
         rutas.append(frames_dir)
@@ -156,14 +134,8 @@ def _apply_hidden(meta: dict, stem: str, on: bool) -> None:
 
 
 def _write_meta(stem: str, meta: dict) -> None:
-    """Guarda un meta YA EXISTENTE respetando su atributo de oculto. En Windows
-    write_text sobre un archivo oculto falla con «acceso denegado» (abre con
-    CREATE_ALWAYS + FILE_ATTRIBUTE_NORMAL), así que hay que desmarcarlo antes y
-    volver a marcarlo después."""
-    path = META_DIR / f"{stem}.json"
-    _set_os_hidden(path, False)
-    path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
-    _set_os_hidden(path, bool(meta.get("hidden")))
+    """Guarda un meta YA EXISTENTE respetando su atributo de oculto (gotcha 10a)."""
+    write_meta_file(META_DIR / f"{stem}.json", meta)
 
 
 def _reveal_hidden() -> bool:
@@ -317,6 +289,16 @@ class IdRequest(BaseModel):
     id: str
 
 
+class ImportFile(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+    data: str = Field(..., min_length=1)   # data URL («data:image/png;base64,…») o base64 pelado
+    subject: str | None = None
+
+
+class ImportRequest(BaseModel):
+    files: list[ImportFile] = Field(..., min_length=1, max_length=50)
+
+
 class RevealRequest(BaseModel):
     # El cliente manda el valor que quiere, no un toggle ciego: así dos
     # pestañas abiertas no se pelean por el estado
@@ -357,6 +339,42 @@ class BatchRequest(BaseModel):
 
 class PaletteRequest(BaseModel):
     sprite: str
+
+
+class Model3DRequest(BaseModel):
+    base_id: str
+    engine_id: str | None = None
+    quality: str | None = None   # una de las calidades del motor (motores.json)
+    seed: int | None = None
+
+
+class WebRequest(BaseModel):
+    id: str
+    preset: str = "web"   # una de spritegen.web3d.PRESETS
+
+
+class OrientRequest(BaseModel):
+    id: str
+    yaw: int = Field(..., ge=0, le=270)   # 0, 90, 180 o 270
+
+
+class BakeRequest(BaseModel):
+    model_id: str
+    # Un PNG (data URL) por dirección, todos del mismo tamaño: los pinta el
+    # visor 3D del navegador con el encuadre común
+    frames: list[str] = Field(..., min_length=1, max_length=16)
+    ss: int = Field(4, ge=1, le=8)        # supermuestreo del render
+    colors: int = Field(32, ge=2, le=256)
+    scale: int = Field(6, ge=1, le=12)
+    use_palette: bool = False
+    # Ajustes del horneado: solo se guardan en la ficha, para repetirlo
+    view: str = "iso"
+    yaw: int = Field(0, ge=0, le=270)
+    light: str = "dia"
+    scale_mode: str = "tiles"
+    tiles: float | None = Field(None, gt=0, le=64)
+    tile_px: int | None = Field(None, ge=8, le=512)
+    ppu: float = Field(..., gt=0)
 
 
 @app.post("/api/generate")
@@ -626,6 +644,101 @@ def api_batch_cancel() -> dict:
     return dict(BATCH)
 
 
+@app.post("/api/model3d")
+def api_model3d(req: Model3DRequest) -> dict:
+    """Modelo 3D texturizado (GLB) a partir del sprite del vidrio.
+
+    Parte de su imagen ORIGINAL de IA, no del PNG pixelizado: con el tramado
+    del pixel art la textura del modelo sale manchada y saturada."""
+    base_meta, raw_path = _base_sprite(req.base_id)
+    with generation_lock():
+        try:
+            stem = image_to_model(
+                raw_path,
+                subject=base_meta["subject"],
+                engine_id=req.engine_id or "trellis2",
+                quality=req.quality,
+                seed=req.seed,
+                source_id=base_meta["id"],
+            )
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(400, str(exc))
+        except Exception as exc:
+            raise HTTPException(500, f"{type(exc).__name__}: {exc}")
+    _inherit_hidden(base_meta, stem)
+    return _meta_for(stem)
+
+
+def _model_meta(model_id: str) -> dict:
+    try:
+        meta = _meta_for(Path(model_id).name)
+    except (OSError, json.JSONDecodeError):
+        raise HTTPException(404, "No se encontró el modelo 3D")
+    if meta["kind"] != "model3d":
+        raise HTTPException(400, "Esta operación solo aplica a modelos 3D")
+    return meta
+
+
+@app.post("/api/model3d/orient")
+def api_model3d_orient(req: OrientRequest) -> dict:
+    """Guarda qué cara del modelo queda de frente (pasos de 90°): TRELLIS no
+    lo garantiza, y el horneado de direcciones parte de ella."""
+    if req.yaw % 90:
+        raise HTTPException(400, "La orientación va en pasos de 90°")
+    meta = _model_meta(req.id)
+    stem = meta["id"]
+    raw = json.loads((META_DIR / f"{stem}.json").read_text(encoding="utf-8"))
+    raw["yaw"] = req.yaw
+    _write_meta(stem, raw)
+    return _meta_for(stem)
+
+
+@app.post("/api/model3d/web")
+def api_model3d_web(req: WebRequest) -> dict:
+    """Versión web del GLB (gltf-transform: simplificar, meshopt, WebP). Es CPU
+    y tarda un par de segundos; si ya existe, se reutiliza."""
+    meta = _model_meta(req.id)
+    try:
+        web_version(meta["id"], req.preset)
+    except (ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
+        raise HTTPException(400, str(exc))
+    return _meta_for(meta["id"])
+
+
+@app.post("/api/model3d/sprites")
+def api_model3d_sprites(req: BakeRequest) -> dict:
+    """Hornea a pixel art los renders de un modelo 3D: un sprite con una
+    dirección, una animación de giro con varias. Es CPU (pixelizar), no GPU:
+    los renders ya llegan pintados por el navegador."""
+    meta = _model_meta(req.model_id)
+    frames: list[Image.Image] = []
+    for i, data in enumerate(req.frames):
+        try:
+            crudo = base64.b64decode(data.split(",", 1)[-1], validate=True)
+            with Image.open(io.BytesIO(crudo)) as img:
+                img.load()
+                frames.append(img.convert("RGBA"))
+        except (binascii.Error, ValueError, OSError):
+            raise HTTPException(400, f"El render de la dirección {i + 1} no es una imagen legible")
+    palette = None
+    if req.use_palette:
+        if not PALETTE_PATH.exists():
+            raise HTTPException(400, "Aún no existe la paleta global del proyecto")
+        palette = load_palette(PALETTE_PATH)
+    settings = {
+        "view": req.view, "yaw": req.yaw, "light": req.light,
+        "scale_mode": req.scale_mode, "tiles": req.tiles, "tile_px": req.tile_px,
+        "ppu": round(req.ppu, 3), "ss": req.ss,
+    }
+    try:
+        stem = bake_sprites(meta, frames, ss=req.ss, colors=req.colors, palette=palette,
+                            scale=req.scale, settings=settings)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    _inherit_hidden(meta, stem)
+    return _meta_for(stem)
+
+
 @app.post("/api/unshadow")
 def api_unshadow(req: IdRequest) -> dict:
     """Crea una COPIA del sprite sin sombra de contacto; el original queda intacto."""
@@ -677,6 +790,29 @@ def api_unshadow(req: IdRequest) -> dict:
     if new_meta["hidden"]:
         _apply_hidden(new_meta, stem, True)
     return _meta_for(stem)
+
+
+@app.post("/api/import")
+def api_import(req: ImportRequest) -> dict:
+    """Añade imágenes propias al historial, tal cual (sin fondo ni pixelizado):
+    desde ahí se pueden animar, variar o pixelizar como cualquier sprite.
+    Van en JSON como data URL porque el venv no trae `python-multipart`.
+    Devuelve las fichas creadas y los archivos que no pudieron leerse; un
+    archivo malo no aborta a los demás."""
+    items: list[dict] = []
+    errors: list[str] = []
+    for f in req.files:
+        nombre = Path(f.name).name
+        try:
+            crudo = base64.b64decode(f.data.split(",", 1)[-1], validate=True)
+            with Image.open(io.BytesIO(crudo)) as img:
+                img.load()
+                stem = import_image(img, name=nombre, subject=f.subject)
+        except (binascii.Error, ValueError, OSError) as exc:
+            errors.append(f"«{nombre}»: no es una imagen legible ({type(exc).__name__})")
+            continue
+        items.append(_meta_for(stem))
+    return {"items": items, "errors": errors}
 
 
 @app.post("/api/favorite")
@@ -764,6 +900,35 @@ def api_make_palette(req: PaletteRequest) -> dict:
     colors = extract_palette(Image.open(sprite_path), n=32)
     save_palette(PALETTE_PATH, colors)
     return {"colors": [f"#{r:02X}{g:02X}{b:02X}" for r, g, b in colors]}
+
+
+@app.get("/api/live")
+def api_live() -> dict:
+    """Progreso fino del trabajo en curso. A diferencia de /api/status no
+    toca el disco: la GUI lo sondea cada ~1 s mientras hay trabajo."""
+    return {
+        "generating": GENERATION_LOCK.locked() or BATCH["running"],
+        # Fotogramas completados (animación por esqueleto)
+        "frames": dict(PROGRESS),
+        # Paso de muestreo y preview, directos del WebSocket de ComfyUI
+        "active": LIVE["active"],
+        "step": LIVE["step"],
+        "step_total": LIVE["step_total"],
+        "preview_seq": LIVE["preview_seq"],
+        # Nodo del grafo en ejecución: la GUI lo traduce a la etapa (3D)
+        "node": LIVE["node"],
+    }
+
+
+@app.get("/api/live/preview.jpg")
+def api_live_preview() -> Response:
+    """Último preview del latente que emitió ComfyUI (miniatura en vivo)."""
+    data = LIVE["preview"]
+    if not data:
+        raise HTTPException(404, "No hay preview en curso")
+    media = "image/png" if LIVE["preview_fmt"] == "png" else "image/jpeg"
+    return Response(content=data, media_type=media,
+                    headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/status")
@@ -977,6 +1142,11 @@ def _meta_for(stem: str) -> dict:
         meta["raw_url"] = f"/output/raw/{meta['raw']}"
     if meta.get("video"):
         meta["video_url"] = f"/output/raw/{meta['video']}"
+    if meta.get("model"):
+        meta["model_url"] = f"/output/models/{meta['model']}"
+    for version in (meta.get("web") or {}).values():
+        if version.get("file"):
+            version["url"] = f"/output/models/{version['file']}"
     return meta
 
 

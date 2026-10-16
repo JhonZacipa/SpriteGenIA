@@ -38,14 +38,22 @@ Cargar y descargar modelos de 10 GB es lento y frágil. Manteniéndolo como serv
 
 Están separados a propósito: el núcleo de SpriteGen no importa torch en ningún momento — todo el cálculo pesado ocurre dentro de ComfyUI, al otro lado de una llamada HTTP. Por eso el entorno del proyecto se instala en segundos y su `requirements.txt` cabe en seis líneas.
 
+### La etiqueta de CUDA del torch de ComfyUI
+
+El wheel de torch para Windows lleva dentro su propio runtime de CUDA, y la etiqueta del índice del que se instala (`cu126`, `cu130`…) fija para qué generaciones de GPU trae kernels compilados. `cu126` llega hasta Hopper (`sm_90`) y **no incluye Blackwell (RTX 50, `sm_120`)**: con esas tarjetas ComfyUI arranca, torch ve la GPU, y el primer nodo que calcula falla con `CUDA error: no kernel image is available for execution on the device`. Es un error de instalación, no del workflow, y `torch.cuda.get_arch_list()` lo revela en un segundo.
+
+Reglas que se siguen aquí: instalar siempre desde `--index-url https://download.pytorch.org/whl/cu130` (en Windows el torch de PyPI es solo CPU); mantener torch, torchvision y torchaudio con la misma etiqueta, porque torchvision trae kernels propios; no instalar el CUDA Toolkit (basta el driver, y un toolkit en el PATH puede colisionar con las DLL del wheel); y apagar ComfyUI antes de reinstalar, porque pip no puede sustituir DLL en uso.
+
 ---
 
 ## 3. Mapa de módulos (`spritegen/`)
 
 | Módulo | Responsabilidad |
 |---|---|
-| `engines.py` | Motores intercambiables: lee `config/motores.json`, comprueba qué está instalado y **construye el workflow de ComfyUI** para cada arquitectura (`sdxl`, `zimage`, `flux2`, `wan22`, `wan22_moe`) |
-| `generate.py` | Orquestador: lanza el workflow, vigila la cola con sondeo robusto (detecta trabajos perdidos vía `/queue` y cancela huérfanos con `/interrupt`) y remata la generación (fondo → sombra → pixelizado → metadatos). Incluye el arranque automático de ComfyUI con lock anti doble arranque |
+| `engines.py` | Motores intercambiables: lee `config/motores.json`, comprueba qué está instalado y **construye el workflow de ComfyUI** para cada arquitectura (`sdxl`, `zimage`, `flux2`, `wan22`, `wan22_moe`, `trellis2`, `pixal3d`) |
+| `generate.py` | Orquestador: lanza el workflow, vigila la cola con sondeo robusto (detecta trabajos perdidos vía `/queue` y cancela huérfanos con `/interrupt`) y remata la generación (fondo → sombra → pixelizado → metadatos). Recoge las salidas de cualquier tipo (imágenes o modelos GLB), libera la memoria de ComfyUI al cambiar entre familias pesadas (vídeo ↔ 3D) e incluye el arranque automático de ComfyUI con lock anti doble arranque |
+| `model3d.py` | Imagen → modelo 3D texturizado (GLB): separa el sujeto del fondo, corre TRELLIS.2, limpia los metadatos que ComfyUI incrusta en el GLB y registra la pieza con su miniatura. Y el camino de vuelta: convierte los renders de cada dirección en sprites con recorte y paleta comunes |
+| `livefeed.py` | Escucha el **WebSocket de ComfyUI** durante cada workflow: paso de muestreo (`progress`) y preview del latente a medio desruido, que la GUI muestra como barra de progreso real y miniatura en vivo. Canal informativo puro: si falta `websocket-client` o la conexión falla, todo sigue funcionando |
 | `pixelize.py` | El corazón del pixel art: rejilla nativa, cuantización, alfa duro, limpieza de píxeles sueltos y reescalado *nearest* |
 | `background.py` | Tres detectores independientes: fondo plano, sombra difusa y sombra de contacto |
 | `palette.py` | Paleta global del proyecto (`palettes/proyecto.txt`, un color hex por línea, compatible con Lospec) |
@@ -55,6 +63,10 @@ Están separados a propósito: el núcleo de SpriteGen no importa torch en ning�
 | `effects.py` | Animaciones sin GPU con bucle perfecto: mecer, fuego, tela ondeando, humo |
 | `terrain.py` | Tiles de 64 px *seamless*, 16 transiciones Wang por máscara de esquinas y exportación de tileset |
 | `sheet.py` | Empaqueta frames en un sprite sheet |
+| `web3d.py` | Versión web de un modelo 3D con `gltf-transform` (Node, en `tools/gltf/`): malla simplificada, geometría meshopt y texturas WebP |
+| `ocultos.py` | El atributo «oculto» de Windows y la reescritura segura de fichas ocultas, compartidos por el servidor y la CLI |
+| `headless.py` | Navegador sin ventana para la CLI: abre Chrome (o Edge) en modo *headless*, lo controla por el protocolo de DevTools y recoge el resultado de la página. Lo usa el horneado 3D, que es WebGL |
+| `importer.py` | Registra imágenes ajenas como entradas `sprite` del historial (original + copia + ficha), tal cual |
 | `cli.py` | La línea de comandos, espejo de todas las funciones de la GUI |
 
 ---
@@ -71,7 +83,9 @@ output/                  sprites finales
   ├── raw/               imágenes tal cual salen de la IA
   ├── frames/<slug>/     frames sueltos de cada animación
   ├── meta/*.json        metadatos de cada generación
+  ├── models/            modelos 3D (GLB)
   └── terrain/<id>/      tiles base de cada terreno
+app/static/vendor/three/ Three.js copiado en local para el visor 3D (sin internet)
 ```
 
 ---
@@ -96,7 +110,7 @@ Un «motor» es una combinación de modelo, arquitectura y parámetros. Se decla
 {
   "id": "klein4b",
   "label": "FLUX.2 Klein 4B · calidad + edición",
-  "kind": "image",              // image | video
+  "kind": "image",              // image | video | model3d
   "arch": "flux2",              // qué constructor de workflow usar
   "files": {                    // "a|b" = alternativas válidas
     "diffusion_models": ["flux-2-klein-4b-fp8.safetensors"],
@@ -120,6 +134,7 @@ Cada `arch` construye un grafo de nodos distinto. Las recetas no son inventadas:
 | `flux2` | Modelo destilado con `Flux2Scheduler` + `SamplerCustomAdvanced`; 4 pasos para generar, 8 para editar. La **edición por referencia** inyecta la imagen con `ReferenceLatent` en el condicionado, y el latente de salida debe medir lo mismo que la referencia |
 | `wan22` | Imagen→vídeo con un solo modelo. La longitud del clip debe ser **4n+1** (81, 121…), que es lo que exige su VAE temporal |
 | `wan22_moe` | Imagen→vídeo con **dos expertos** (*high noise* y *low noise*) muestreados en cadena: el primero trabaja hasta un paso frontera y le pasa el latente al segundo. Nunca están los dos en memoria a la vez |
+| `trellis2` · `pixal3d` | Imagen→3D en tres muestreos encadenados con el KSampler estándar —estructura dispersa, forma (a 512 y en cascada a la resolución final) y textura— y un postproceso de malla: remallado, decimado, desplegado UV y horneado de color, relieve y oclusión, hasta un GLB. Sale de la plantilla oficial `3d_pixal3d_trellis2_image_to_model.json` del paquete de plantillas de ComfyUI |
 
 ### Cuando el negative prompt no sirve para nada
 
@@ -153,7 +168,9 @@ Para ciclos que deben cerrar (caminar, *idle*), el método de vídeo muestrea **
 
 ## 8. Historial y metadatos
 
-Cada generación escribe un `output/meta/<nombre>.json` con el prompt, la semilla, el motor y los parámetros. Hay cuatro tipos: `sprite`, `animation`, `terrain` y `tileset`.
+Cada generación escribe un `output/meta/<nombre>.json` con el prompt, la semilla, el motor y los parámetros. Hay cinco tipos: `sprite`, `animation`, `terrain`, `tileset` y `model3d` (el GLB en `output/models/`, una miniatura isométrica y una copia propia de la imagen de partida, para que borrar el sprite base no deje al modelo sin su origen).
+
+**La ficha es la que existe, no la imagen**: el historial se construye leyendo `output/meta/*.json`, así que un PNG suelto en `output/` es invisible. Por eso las imágenes ajenas entran por `importer.py` (`POST /api/import` en la GUI, `spritegen import` en la CLI), que crea los tres archivos de una entrada `sprite` a la vez: el original en `output/raw/`, la copia visible en `output/` y la ficha, con `engine: null` e `imported: true`. Se guardan tal cual (RGBA, con la rotación EXIF aplicada), sin recorte de fondo ni pixelizado, porque no se sabe qué son. El servidor las recibe como data URL dentro del JSON: el venv no trae `python-multipart` y las imágenes son pequeñas.
 
 Dos garantías del sistema de archivos:
 
@@ -201,6 +218,47 @@ La carga sube 1,5× entre la segunda y la tercera fila, pero **el tiempo por pas
 
 Consecuencia importante: **para clips más largos, encadenar tramos en vez de subir la duración**. Dos tramos de 5 s cuestan unos 14 minutos; el mismo clip pedido de una vez, 31. El encadenado arranca cada tramo del último frame del anterior y descarta ese frame duplicado.
 
+### Imagen→3D: lo que cabe en 16 GB
+
+La plantilla oficial de TRELLIS.2 no cabe en una GPU de 16 GB. Medido:
+
+| Ajuste | Resultado |
+|---|---|
+| Cascada de forma a 1536 | El muestreo de esa etapa va a 26 s por paso y después el remallado agota la VRAM |
+| Cascada a 1024 con remallado a 768 | El remallado sigue agotando la VRAM |
+| Cascada a 1024 con remallado a 512 | 4–5 minutos por modelo… pero con algunas semillas el remallado vuelve a agotar la VRAM: su consumo crece con la malla que sale del VAE, que cambia en cada generación |
+| **Lo anterior, reduciendo antes la malla a 2 millones de vértices** (`precluster_max_verts`) | **Unos 3 minutos** con 200 000 caras y texturas de 2048 px, sin pérdida visible, incluida la semilla que fallaba |
+| Sin remallado | Funciona, pero sale peor y tarda más: decimar la malla en bruto cuesta dos minutos |
+
+Si aun así se acaba la memoria, `model3d.py` repite el trabajo remallando a 384 y luego a 256. Tras un error de memoria ComfyUI descarga todos los modelos y su caché no sobrevive, así que el reintento repite también los muestreos.
+
+Otras dos decisiones salen de comparar resultados:
+
+- **La entrada es la imagen original, no el sprite pixelizado.** Con la misma casa como entrada, la versión pixelizada produjo una textura manchada y saturada. El pixelizado va después, al sacar sprites del modelo.
+- **TRELLIS.2 sí, Pixal3D solo como laboratorio.** TRELLIS.2 deja el objeto recto y alineado con los ejes (aunque qué cara queda de frente cambia de una generación a otra); Pixal3D lo reconstruye desde la cámara de la imagen, así que sale inclinado y, al suponer perspectiva, deforma las imágenes isométricas.
+
+`RenderMesh`, el render nativo de ComfyUI, solo hace perspectiva y no ilumina las texturas: sirve para la miniatura del archivo, no para hornear sprites. El visor del vidrio usa Three.js con cámara ortográfica y la luz pegada a la cámara.
+
+### Horneado 3D → sprites
+
+El horneado se pinta **en el navegador**, con el mismo Three.js que muestra el modelo, y el servidor solo pixeliza. Así lo que se encuadra es lo que sale, y el render es el mismo que tendría el modelo en una escena web.
+
+- **Un solo encuadre para todas las direcciones.** Al cargar el modelo se guardan sus vértices; para hornear se proyectan en cada dirección y la cámara ortográfica toma la caja que las contiene a todas. Con eso el origen del modelo cae en el mismo píxel de cada sprite y el objeto no cambia de tamaño al girar. Después el servidor recorta la unión de lo visible, igual para todos.
+- **Una sola paleta.** Las direcciones se cuantizan juntas, en una tira, y esa paleta se aplica a cada una: si cada dirección eligiera la suya, el mismo tejado cambiaría de tono al girar.
+- **Escala por tiles.** TRELLIS.2 entrega todos los modelos normalizados al mismo cubo, así que sin una referencia una choza y un castillo saldrían igual de grandes. Los píxeles por unidad salen de cuántos tiles ocupa la planta: `tile_px / (planta / tiles)`, y en las vistas diagonales se divide además por √2, porque el ancho del rombo de un tile isométrico es la diagonal del cuadrado.
+- **Un renderizador propio.** El horneado crea su propio `WebGLRenderer`: el mapa de entorno pertenece al contexto WebGL que lo generó y no se puede compartir, aunque la geometría y los materiales sí (se clona el modelo sin copiarlos).
+- **Supermuestreo.** Se pinta a 4× la rejilla (o lo que quepa en 4096 px) con antialiasing, y la reducción *box* del pixelizador da bordes limpios.
+- **La misma vía para la interfaz y la línea de comandos.** El cálculo de la escala y el horneado completo (orientar, iluminar, pintar y enviar) viven en el módulo del visor. La interfaz los llama desde la hoja 3D; `spritegen bake3d` abre una página de servicio (`hornear.html`) en un Chrome sin ventana que llama a esas mismas funciones. Por eso los dos caminos dan un resultado idéntico píxel a píxel. La CLI usa el servidor de la interfaz si está abierto y, si no, levanta uno temporal dentro de su propio proceso.
+
+### Versión web: el GLB maestro no se toca
+
+El modelo que sale de TRELLIS.2 se conserva como **maestro**, y las versiones web son copias derivadas (`<nombre>_web.glb`, `<nombre>_ligero.glb`) que se apuntan en su ficha y se borran u ocultan con él. Dos razones:
+
+- **Las versiones web dependen de extensiones** (`EXT_meshopt_compression`, `EXT_texture_webp`, `KHR_mesh_quantization`) que Three.js lee pero no todos los importadores. El maestro sirve para cualquier herramienta.
+- **El horneado a sprites parte siempre del maestro**, con sus texturas completas. Por eso el visor espera a la carga en curso antes de hornear: si se estaba mostrando la versión web, se hornea el maestro igualmente.
+
+La salida de `gltf-transform` es determinista, así que una versión que ya existe se reutiliza en vez de rehacerse.
+
 ### La RAM libre decide el tiempo, no la VRAM
 
 Con dos expertos de 10 GB que se turnan, lo que cuesta caro es el trasiego entre RAM y VRAM. Con 316 MB de RAM libre, el cambio de experto tardó 44 minutos; con 1,5 GB, **1 minuto y 21 segundos**. El cálculo puro va igual de rápido en ambos casos. Antes de una tanda larga conviene cerrar el navegador — el trabajo lo hace el servidor, no la pestaña — y reiniciar ComfyUI si lleva horas encendido.
@@ -216,6 +274,15 @@ Un detalle poco conocido: los frames de un GIF comparten una paleta global calcu
 
 Los frames se ordenan **numéricamente**, no alfabéticamente. Con orden alfabético, `frame_100` cae detrás de `frame_10` y desordena cualquier clip de más de 100 frames.
 
+### Progreso en vivo por WebSocket
+
+La API REST de ComfyUI no expone el paso de muestreo: `/history` solo dice «pendiente» o «terminado». El paso actual (`{"value": 14, "max": 28}`) y los previews del latente a medio desruido viajan únicamente por su WebSocket (`ws://<server>/ws`), y de ahí salen la barra de progreso real y la miniatura en vivo de la GUI (`livefeed.py` → `GET /api/live` y `/api/live/preview.jpg`). Detalles que costaron su depuración:
+
+- **El `client_id` del `POST /prompt` debe coincidir con el `clientId` del WebSocket**: ComfyUI dirige `progress` y previews solo al socket registrado con ese id. Aquí el id lleva el PID para que dos procesos (CLI y GUI) no se desregistren entre sí.
+- **Una sola conexión persistente por proceso, no una por workflow**: el handler de ComfyUI hace `sockets.pop(sid)` al cerrar una conexión, así que reconectar con el mismo id puede desregistrar la conexión nueva si el cierre de la vieja se procesa después (carrera real).
+- Los previews requieren arrancar ComfyUI con `--preview-method auto` (sin él, el método por defecto es `none`). `auto` cae en *latent2rgb* —una proyección lineal por píxel— cuyo coste es despreciable; emite un JPEG por paso como frame binario `[4B evento][4B formato][imagen]`.
+- El WebSocket es **solo informativo**: quien decide cuándo terminó un trabajo sigue siendo el sondeo HTTP, que además sobrevive a reinicios de ComfyUI (el socket moriría sin decir qué pasó con el trabajo).
+
 ---
 
 ## 10. Notas de Windows
@@ -228,6 +295,6 @@ Los frames se ordenan **numéricamente**, no alfabéticamente. Con orden alfabé
 ## 11. Cómo verificar un cambio
 
 1. `python -m py_compile` de los módulos tocados.
-2. **Reiniciar el servidor**: uvicorn corre sin `--reload`, así que los cambios en `app/server.py` o en `spritegen/` no se recargan solos. Los de HTML, CSS y JavaScript sí: basta F5.
+2. **Reiniciar el servidor**: uvicorn corre sin `--reload`, así que los cambios en `app/server.py` o en `spritegen/` no se recargan solos. Los de HTML sí: basta F5. Los de **CSS y JavaScript exigen subir el token de versión** de sus enlaces en `index.html` (`style.css?v=…`, `app.js?v=…`): sin eso el navegador reutiliza el JavaScript cacheado y lo mezcla con el HTML nuevo, lo que produce errores desconcertantes sobre elementos que sí existen en la página.
 3. Probar los endpoints afectados.
 4. Si el cambio toca la generación, una prueba real en GPU y mirar el PNG resultante. En pixel art, muchos fallos solo se ven mirando.

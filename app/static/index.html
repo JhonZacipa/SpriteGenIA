@@ -4,328 +4,555 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SpriteGen · Generador de Sprites</title>
-<link rel="stylesheet" href="style.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='1' y='1' width='6' height='6' fill='%237c5cff'/><rect x='9' y='1' width='6' height='6' fill='%2334d399'/><rect x='1' y='9' width='6' height='6' fill='%23fbbf24'/><rect x='9' y='9' width='6' height='6' fill='%23f87171'/></svg>">
+<link rel="stylesheet" href="style.css?v=20261016f">
+<!-- Three.js r186 copiado en local (vendor/three/, licencia MIT): el visor 3D lo
+     importa por nombre y este mapa lo resuelve. Debe ir antes de cualquier módulo. -->
+<script type="importmap">
+{ "imports": {
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
+} }
+</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23151310'/><rect x='2' y='2' width='12' height='9' fill='%23f2ece0'/><rect x='2' y='12' width='2' height='2' fill='%23d1402f'/><rect x='7' y='12' width='2' height='2' fill='%23d1402f'/><rect x='12' y='12' width='2' height='2' fill='%23d1402f'/></svg>">
 </head>
 <body>
-<!-- Iconos TDesign (MIT, via Iconify) -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12S5.925 1 12 1M8.75 16.5l8-4.5l-8-4.5z"/></symbol><symbol id="i-var" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21.448 13c-.5 4.777-4.539 8.5-9.448 8.5A9.5 9.5 0 0 1 3.38 16m-.88 4.5v-5h3M2.552 11C3.052 6.223 7.09 2.5 12 2.5A9.5 9.5 0 0 1 20.62 8m.88-4.5v5h-3"/></symbol><symbol id="i-replay" viewBox="0 0 24 24"><g fill="none"><path d="m15 12l-4.5 3V9z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21.168 16A10 10 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10l-2-1.5"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m15 12l-4.5 3V9z"/></g></symbol><symbol id="i-clear" viewBox="0 0 24 24"><g fill="none"><path d="M14 2h-4v8.5H4V15h16v-4.5h-6zM4 15v7h16v-7z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M4 15v7h16v-7M4 15h16M4 15v-4.5h6V2h4v8.5h6V15m-5 7v-3"/></g></symbol><symbol id="i-star" viewBox="0 0 24 24"><g fill="none"><path d="m12 3.676l2.187 6.29l6.658.136l-5.307 4.024l1.928 6.374L12 16.696L6.534 20.5l1.928-6.374l-5.307-4.024l6.659-.136z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m12 3.676l2.187 6.29l6.658.136l-5.307 4.024l1.928 6.374L12 16.696L6.534 20.5l1.928-6.374l-5.307-4.024l6.659-.136z"/></g></symbol><symbol id="i-star-f" viewBox="0 0 24 24"><path fill="currentColor" d="m12.001.63l2.903 8.35l8.839.181l-7.045 5.341l2.56 8.462L12 17.914l-7.256 5.05l2.56-8.462L.26 9.161l8.839-.18z"/></symbol><symbol id="i-palette" viewBox="0 0 24 24"><g fill="none"><path d="M22 11.464c-.14 2.079-1.522 3.627-3.726 4.221c-1.86.502-3.955-.498-5.39.704c-1.437 1.2-1.202 2.666-.558 3.692c.42.666 1.182 1.816-.674 1.816C6.13 21.897 2 17.523 2 12S6.477 2 12 2s10.37 3.953 10 9.464"/><path d="M11.75 8.004a1 1 0 1 1 0-2a1 1 0 0 1 0 2m-4.72 3a1 1 0 1 1 0-2a1 1 0 0 1 0 2m9.488 0a1 1 0 1 1 0-2a1 1 0 0 1 0 2"/><path stroke="currentColor" stroke-width="2" d="M22 11.464c-.14 2.079-1.522 3.627-3.726 4.221c-1.86.502-3.955-.498-5.39.704c-1.437 1.2-1.202 2.666-.558 3.692c.42.666 1.182 1.816-.674 1.816C6.13 21.897 2 17.523 2 12S6.477 2 12 2s10.37 3.953 10 9.464Z"/><path stroke="currentColor" stroke-width="2" d="M11.75 8.004a1 1 0 1 1 0-2a1 1 0 0 1 0 2Zm-4.72 3a1 1 0 1 1 0-2a1 1 0 0 1 0 2Zm9.488 0a1 1 0 1 1 0-2a1 1 0 0 1 0 2Z"/></g></symbol><symbol id="i-brush" viewBox="0 0 24 24"><g fill="none"><path d="M10.5 2.5L7 6l11 11l3.5-3.5L18 10l3-3l-4-4l-3 3z"/><path d="m1.5 11.5l11 11L18 17L7 6z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m7 6l11 11M7 6l-5.5 5.5l11 11L18 17M7 6l3.5-3.5L14 6l3-3l4 4l-3 3l3.5 3.5L18 17"/></g></symbol><symbol id="i-del" viewBox="0 0 24 24"><g fill="none"><path d="M5 5h14l-.5 17h-13z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21 5H3m2 0h14l-.5 17h-13zm3.5-3h7v3h-7zM12 9v9"/></g></symbol><symbol id="i-copy" viewBox="0 0 24 24"><g fill="none"><path d="M10 10h11v11H10z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M10 10h11v11H10z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M14 6.5V3H3v11h3.5"/></g></symbol><symbol id="i-video" viewBox="0 0 24 24"><g fill="none"><path d="M3 3h18v18H3z"/><path d="M15.75 12L9 15.897V8.103z"/><path stroke="currentColor" stroke-width="2" d="M3 3h18v18H3z"/><path stroke="currentColor" stroke-width="2" d="M15.75 12L9 15.897V8.103z"/></g></symbol><symbol id="i-klein" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="square" d="M11.5 21H3V3h18v8.5m-18 5V16l6-6l4.5 4.5m4.25-6.25a2 2 0 1 1-4 0a2 2 0 0 1 4 0Z"/><path d="m19 16.75l.7 1.55l1.55.7l-1.55.7l-.7 1.55l-.7-1.55l-1.55-.7l1.55-.7z"/></g></symbol><symbol id="i-edit" viewBox="0 0 24 24"><g fill="none"><path d="M13.5 19.787V22.5h2.713l3.951-3.95l-2.713-2.714z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21 9V3H3v18h6m4.5-6.5L9 10l-5.5 5.5m14.25-7.25a2 2 0 1 1-4 0a2 2 0 0 1 4 0Z"/><path stroke="currentColor" stroke-width="2" d="m17.45 15.836l-3.95 3.95V22.5h2.713l3.951-3.95m-2.713-2.714l2.336-2.336l2.713 2.713l-2.336 2.336m-2.713-2.713l2.713 2.713"/></g></symbol><symbol id="i-map" viewBox="0 0 24 24"><g fill="none"><path d="M3 6.5V20l6-2.5l6 3.5l6-3.5V4l-6 2.5L9 3z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M9 16.75v-13m6 3.5v13M3 6.5V20l6-2.5l6 3.5l6-3.5V4l-6 2.5L9 3z"/></g></symbol><symbol id="i-terrain" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M16 6.5L8 3L3 6.5V19l5-3m8-9.5L21 4v6m-5-3.5V10m-8 6V3.5M8 16l1.998.999M18 13v4m0 0v4m0-4h-4m4 0h4"/></symbol><symbol id="i-tiles" viewBox="0 0 24 24"><g fill="none"><path d="M2 20h20V4H2z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M8.667 4v16m6.666-16v16M2 12h20M2 20h20V4H2z"/></g></symbol><symbol id="i-fx" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21 12H5.5a2.5 2.5 0 0 1 0-5H7m9-3h-3a2 2 0 1 0 0 4h8m-4 8H8a2 2 0 1 0 0 4h3.5"/></symbol><symbol id="i-playc" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12"/><path fill="currentColor" d="M18.25 12L8.5 17.63V6.37z"/></symbol><symbol id="i-style" viewBox="0 0 24 24"><g fill="none"><path d="M12 21.485L20.485 13H3.515z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M12 4.515L20.485 13L12 21.485L3.515 13zm0 0L9.525 2.04M19.95 13H4.25m15.97 8.01c.293.37.767.37 1.06 0s.293-.97 0-1.34l-.53-.67l-.53.67c-.293.37-.293.97 0 1.34Z"/></g></symbol><symbol id="i-save" viewBox="0 0 24 24"><defs><path id="SVGhOKll5Tg" d="M12 3H7v4h5zM7 21h10v-6H7z"/></defs><g fill="none"><path d="M3 3h13l5 5v13H3z"/><use href="#SVGhOKll5Tg"/><use href="#SVGhOKll5Tg" stroke="currentColor" stroke-width="2"/><path stroke="currentColor" stroke-width="2" d="M3 3h13l5 5v13H3z"/></g></symbol><symbol id="i-game" viewBox="0 0 24 24"><g fill="none"><path d="M3 7h18v12H3z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M12 7V4a1 1 0 0 1 1-1h3M3 7v12h18V7z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M6 13h2m0 0h2m-2 0v-2m0 2v2m6-2h.004v.004H14zm2-2h.003v.004H16zm0 4h.003v.004H16zm2-2h.003v.004H18z"/></g></symbol><symbol id="i-power" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M7 5.125a8.5 8.5 0 1 0 10 0M12 3v8"/></symbol><symbol id="i-collapse" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M13.5 16.5L18 12l-4.5-4.5m-6.5 9l4.5-4.5L7 7.5"/></symbol><symbol id="i-expand" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M10.5 7.5L6 12l4.5 4.5m6.5-9L12.5 12l4.5 4.5"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5c5 0 9 4.4 10 7c-1 2.6-5 7-10 7s-9-4.4-10-7c1-2.6 5-7 10-7Z"/><circle cx="12" cy="12" r="3"/></g></symbol><symbol id="i-eye-off" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5c5 0 9 4.4 10 7c-1 2.6-5 7-10 7s-9-4.4-10-7c1-2.6 5-7 10-7Z"/><path stroke-linecap="square" d="M4 4l16 16"/></g></symbol></svg>
+<!-- Iconos TDesign (MIT, via Iconify) + los propios de la mesa de luz -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12S5.925 1 12 1M8.75 16.5l8-4.5l-8-4.5z"/></symbol><symbol id="i-var" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21.448 13c-.5 4.777-4.539 8.5-9.448 8.5A9.5 9.5 0 0 1 3.38 16m-.88 4.5v-5h3M2.552 11C3.052 6.223 7.09 2.5 12 2.5A9.5 9.5 0 0 1 20.62 8m.88-4.5v5h-3"/></symbol><symbol id="i-replay" viewBox="0 0 24 24"><g fill="none"><path d="m15 12l-4.5 3V9z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21.168 16A10 10 0 0 1 12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10l-2-1.5"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m15 12l-4.5 3V9z"/></g></symbol><symbol id="i-clear" viewBox="0 0 24 24"><g fill="none"><path d="M14 2h-4v8.5H4V15h16v-4.5h-6zM4 15v7h16v-7z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M4 15v7h16v-7M4 15h16M4 15v-4.5h6V2h4v8.5h6V15m-5 7v-3"/></g></symbol><symbol id="i-star" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m12 3.676l2.187 6.29l6.658.136l-5.307 4.024l1.928 6.374L12 16.696L6.534 20.5l1.928-6.374l-5.307-4.024l6.659-.136z"/></g></symbol><symbol id="i-star-f" viewBox="0 0 24 24"><path fill="currentColor" d="m12.001.63l2.903 8.35l8.839.181l-7.045 5.341l2.56 8.462L12 17.914l-7.256 5.05l2.56-8.462L.26 9.161l8.839-.18z"/></symbol><symbol id="i-palette" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-width="2" d="M22 11.464c-.14 2.079-1.522 3.627-3.726 4.221c-1.86.502-3.955-.498-5.39.704c-1.437 1.2-1.202 2.666-.558 3.692c.42.666 1.182 1.816-.674 1.816C6.13 21.897 2 17.523 2 12S6.477 2 12 2s10.37 3.953 10 9.464Z"/><path stroke="currentColor" stroke-width="2" d="M11.75 8.004a1 1 0 1 1 0-2a1 1 0 0 1 0 2Zm-4.72 3a1 1 0 1 1 0-2a1 1 0 0 1 0 2Zm9.488 0a1 1 0 1 1 0-2a1 1 0 0 1 0 2Z"/></g></symbol><symbol id="i-brush" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m7 6l11 11M7 6l-5.5 5.5l11 11L18 17M7 6l3.5-3.5L14 6l3-3l4 4l-3 3l3.5 3.5L18 17"/></symbol><symbol id="i-del" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21 5H3m2 0h14l-.5 17h-13zm3.5-3h7v3h-7zM12 9v9"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M10 10h11v11H10z"/><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M14 6.5V3H3v11h3.5"/></g></symbol><symbol id="i-video" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-width="2" d="M3 3h18v18H3z"/><path stroke="currentColor" stroke-width="2" d="M15.75 12L9 15.897V8.103z"/></g></symbol><symbol id="i-klein" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="square" d="M11.5 21H3V3h18v8.5m-18 5V16l6-6l4.5 4.5m4.25-6.25a2 2 0 1 1-4 0a2 2 0 0 1 4 0Z"/><path d="m19 16.75l.7 1.55l1.55.7l-1.55.7l-.7 1.55l-.7-1.55l-1.55-.7l1.55-.7z"/></g></symbol><symbol id="i-edit" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21 9V3H3v18h6m4.5-6.5L9 10l-5.5 5.5m14.25-7.25a2 2 0 1 1-4 0a2 2 0 0 1 4 0Z"/><path stroke="currentColor" stroke-width="2" d="m17.45 15.836l-3.95 3.95V22.5h2.713l3.951-3.95m-2.713-2.714l2.336-2.336l2.713 2.713l-2.336 2.336m-2.713-2.713l2.713 2.713"/></g></symbol><symbol id="i-map" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M9 16.75v-13m6 3.5v13M3 6.5V20l6-2.5l6 3.5l6-3.5V4l-6 2.5L9 3z"/></symbol><symbol id="i-terrain" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M16 6.5L8 3L3 6.5V19l5-3m8-9.5L21 4v6m-5-3.5V10m-8 6V3.5M8 16l1.998.999M18 13v4m0 0v4m0-4h-4m4 0h4"/></symbol><symbol id="i-tiles" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M8.667 4v16m6.666-16v16M2 12h20M2 20h20V4H2z"/></symbol><symbol id="i-fx" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M21 12H5.5a2.5 2.5 0 0 1 0-5H7m9-3h-3a2 2 0 1 0 0 4h8m-4 8H8a2 2 0 1 0 0 4h3.5"/></symbol><symbol id="i-playc" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12"/><path fill="currentColor" d="M18.25 12L8.5 17.63V6.37z"/></symbol><symbol id="i-style" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M12 4.515L20.485 13L12 21.485L3.515 13zm0 0L9.525 2.04M19.95 13H4.25m15.97 8.01c.293.37.767.37 1.06 0s.293-.97 0-1.34l-.53-.67l-.53.67c-.293.37-.293.97 0 1.34Z"/></symbol><symbol id="i-save" viewBox="0 0 24 24"><g fill="none"><path stroke="currentColor" stroke-width="2" d="M3 3h13l5 5v13H3z"/><path stroke="currentColor" stroke-width="2" d="M12 3H7v4h5zM7 21h10v-6H7z"/></g></symbol><symbol id="i-power" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M7 5.125a8.5 8.5 0 1 0 10 0M12 3v8"/></symbol><symbol id="i-collapse" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M13.5 16.5L18 12l-4.5-4.5m-6.5 9l4.5-4.5L7 7.5"/></symbol><symbol id="i-expand" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M10.5 7.5L6 12l4.5 4.5m6.5-9L12.5 12l4.5 4.5"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5c5 0 9 4.4 10 7c-1 2.6-5 7-10 7s-9-4.4-10-7c1-2.6 5-7 10-7Z"/><circle cx="12" cy="12" r="3"/></g></symbol><symbol id="i-eye-off" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5c5 0 9 4.4 10 7c-1 2.6-5 7-10 7s-9-4.4-10-7c1-2.6 5-7 10-7Z"/><path stroke-linecap="square" d="M4 4l16 16"/></g></symbol><symbol id="i-frames" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M3 3h18v18H3zm0 4.5h18M3 12h18m-18 4.5h18M8.5 3v18"/></symbol><symbol id="i-light" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M12 2v2m0 16v2M4 12H2m20 0h-2M5.6 5.6L4.2 4.2m14.2 1.4l1.4-1.4M5.6 18.4l-1.4 1.4m14.2-1.4l1.4 1.4M16 12a4 4 0 1 1-8 0a4 4 0 0 1 8 0Z"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M6 9a6 6 0 0 1 12 0v5l2 3H4l2-3zm4 11h4"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="7.5"/><path stroke-linecap="square" d="m16 16l5 5"/></g></symbol><symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="m4 12.5l5.5 5.5L20 6"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M12 5v14M5 12h14"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M5 5l14 14M19 5L5 19"/></symbol><symbol id="i-cube" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-linejoin="round" stroke-width="2" d="M12 2.5l8.5 4.75v9.5L12 21.5l-8.5-4.75v-9.5zm0 9.5l8.5-4.75M12 12L3.5 7.25M12 12v9.5"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M12 3v12m-5-5l5 5l5-5M4 20h16"/></symbol><symbol id="i-chain" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="2" d="M10 14a4 4 0 0 0 5.66 0l3-3A4 4 0 0 0 13 5.34l-1.5 1.5m2.5 7.16a4 4 0 0 0-5.66 0l-3 3A4 4 0 0 0 11 22.66l1.5-1.5"/></symbol></svg>
 
-<aside class="sidebar">
-  <header class="brand">
-    <div class="brand-logo"></div>
-    <div>
-      <h1>SpriteGen</h1>
-      <p>Sprites pixel art sin fondo, en tu GPU</p>
+<!-- ══ La barra de registro: de ella cuelga todo, y en ella la máquina escribe ══ -->
+<header class="pegbar">
+  <div class="pegbar-brand">
+    <span class="pegs" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="titleblock">
+      <b class="wordmark">SpriteGen</b>
+      <i class="prod" id="prodLine">archivo</i>
+    </span>
+    <span class="tagline">taller de pixel art</span>
+  </div>
+
+  <div class="pegbar-job" id="jobBox" data-state="idle">
+    <span class="job-lamp" aria-hidden="true"></span>
+    <span class="job-text" id="jobText">En reposo</span>
+    <span class="job-clock" id="jobClock"></span>
+    <div class="job-track" id="jobTrack"><span id="jobFill"></span></div>
+    <span class="job-peek hidden" id="jobPeekWrap">
+      <img id="jobPeek" alt="La imagen formándose en la GPU">
+      <span class="job-peek-pop"><img id="jobPeekBig" alt=""></span>
+    </span>
+    <button class="btn-mini hidden" id="btnQueueStop" title="Para la cola después del clip que se está generando; lo ya generado se conserva">Detener cola</button>
+    <button class="btn-mini hidden" id="btnJobClear" title="Descartar el aviso">Visto</button>
+  </div>
+
+  <div class="pegbar-machine">
+    <button class="btn-mini" id="btnNotify" title="Avisar con una notificación del navegador cuando termine un trabajo largo"><svg class="ic ic-xs"><use href="#i-bell"/></svg> Avisar</button>
+    <button class="btn-mini hidden" id="btnReveal"></button>
+    <span class="machine-state"><span class="dot" id="engineDot"></span><span id="engineText">Motor IA: …</span></span>
+    <button class="btn-mini" id="btnEngineOff" title="Libera la RAM y la VRAM. El motor se enciende solo cuando vuelvas a generar."><svg class="ic ic-xs"><use href="#i-power"/></svg> Apagar</button>
+  </div>
+</header>
+
+<div class="desk">
+
+  <!-- ══ Las hojas, ordenadas por frecuencia de uso ══ -->
+  <aside class="sheets">
+    <div class="sheet-body">
+
+      <!-- Hoja diaria, siempre abierta -->
+      <section class="open-sheet" data-sheet="gen">
+        <h2 class="sheet-head"><svg class="ic"><use href="#i-play"/></svg> Generar</h2>
+        <div class="fld">
+          <label class="lbl" for="engine" data-help="Modelo de IA que dibuja la imagen. Al cambiarlo se cargan sus pasos y su CFG recomendados. Los motores cuyos archivos no estén descargados salen deshabilitados y se activan solos cuando aparecen.">Motor de generación</label>
+          <select id="engine"></select>
+          <p class="model-note" id="engineDesc"></p>
+        </div>
+        <div class="fld">
+          <label class="lbl" for="subject" data-help="Qué quieres generar, escrito en inglés. El estilo pixel art lo pone la plantilla global de la hoja «Estilo». Si luego vas a animarlo, evita props apoyados en el suelo (espadas clavadas, bastones): anclan los brazos y limitan el movimiento.">Descripción del sprite <span class="hint">en inglés</span></label>
+          <textarea id="subject" rows="3" placeholder="medieval house with thatched roof, stone walls…"></textarea>
+        </div>
+        <label class="chk" id="paletteRow" data-help="Cuantiza usando la paleta global fija en lugar de elegir colores automáticos, para que todos tus sprites compartan exactamente los mismos colores. La paleta se crea desde la hoja de exposición de un sprite, con «Usar como paleta global».">
+          <input type="checkbox" id="usePalette" disabled>
+          <span>Usar paleta global</span>
+        </label>
+        <div id="paletteSwatches" class="swatches"></div>
+        <label class="chk" data-help="Envía tu texto TAL CUAL al motor: ignora la plantilla de estilo pixel art y el negative prompt globales. Afecta a «Generar» y a la variación Klein. Sirve para crear cualquier tipo de imagen; el resultado igualmente pasa por el pixelizador, y la imagen sin tocar queda en «Original IA».">
+          <input type="checkbox" id="rawPrompt">
+          <span>Prompt libre (ignora la plantilla)</span>
+        </label>
+        <div class="acts">
+          <button class="btn camera" id="btnGen"><svg class="ic"><use href="#i-play"/></svg> Generar</button>
+          <div class="acts-row">
+            <button class="btn" id="btnVar" title="Mismo prompt, semilla nueva"><svg class="ic"><use href="#i-var"/></svg> Variación</button>
+            <button class="btn" id="btnRepeat" title="Repetir con la semilla del sprite que está en el vidrio"><svg class="ic"><use href="#i-replay"/></svg> Misma semilla</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hoja diaria, siempre abierta -->
+      <section class="open-sheet" data-sheet="anim">
+        <h2 class="sheet-head"><svg class="ic"><use href="#i-video"/></svg> Animar</h2>
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl" for="animMethod" data-help="Esqueleto: ControlNet sigue poses exactas fotograma a fotograma, alrededor de un minuto por fotograma. Vídeo: Wan 2.2 genera un clip completo y se muestrean fotogramas de él — la identidad se conserva perfecta entre fotogramas, pero tarda varios minutos.">Método</label>
+            <select id="animMethod">
+              <option value="skeleton" selected>Esqueleto (ControlNet)</option>
+              <option value="video">Vídeo (Wan 2.2)</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="animNative" data-help="Rejilla nativa de cada fotograma. 128 px es lo recomendado para personajes (dos tiles de alto); 64 px para props de un tile, como fuego o banderas. Con el método de vídeo, 256 apura el límite del clip.">Rejilla por fotograma</label>
+            <select id="animNative">
+              <option value="64">64 px · prop</option>
+              <option value="96">96 px</option>
+              <option value="128" selected>128 px · personaje</option>
+              <option value="160">160 px</option>
+              <option value="192">192 px</option>
+              <option value="256">256 px · máximo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fld" id="animKindRow">
+          <label class="lbl" for="animKind" data-help="Ciclo de poses que guía al esqueleto; debajo se previsualiza cómo se moverá. Puedes añadir ciclos propios creando assets/poses/&lt;nombre&gt;/frame_XX.png.">Ciclo de poses</label>
+          <select id="animKind"></select>
+        </div>
+
+        <div id="videoUI" class="hidden fld-stack">
+          <div class="fld">
+            <label class="lbl" for="videoEngine" data-help="Modelo de imagen a vídeo. El 14B (mezcla de dos expertos) es el bueno; el 5B es rápido pero pierde el estilo. La versión «libre» no pixeliza nada: devuelve el clip tal cual, y es la única que permite encadenar tramos.">Modelo de vídeo</label>
+            <select id="videoEngine"></select>
+            <p class="model-note" id="videoEngineDesc"></p>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="videoMotion" data-help="Movimiento que hará en el clip el sprite que está en el vidrio, escrito en inglés. Los movimientos suaves salen más nítidos: Wan desenfoca cara y manos en los movimientos rápidos.">Movimiento <span class="hint">en inglés</span></label>
+            <input type="text" id="videoMotion" placeholder="walk cycle / idle breathing / attack slash">
+          </div>
+          <div class="fld">
+            <label class="lbl" for="videoLength" data-help="Duración del clip que genera el modelo. Wan se entrenó con clips de cinco segundos: más allá, el personaje empieza a derivar. En modo pixel art solo se muestrea una zancada, así que un clip corto genera igual de bien y tarda menos.">Duración del clip</label>
+            <select id="videoLength">
+              <option value="49">3,1 s</option>
+              <option value="81" selected>5,1 s</option>
+              <option value="121">7,6 s</option>
+            </select>
+          </div>
+          <p class="model-note hidden" id="chainNote"></p>
+          <div class="grid2" id="videoPixelRow">
+            <div class="fld">
+              <label class="lbl" for="videoFrames" data-help="Cuántos fotogramas del clip forman el ciclo final que se exporta como sprite sheet.">Fotogramas</label>
+              <select id="videoFrames">
+                <option value="6">6</option>
+                <option value="8" selected>8</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label class="lbl" for="videoCycle" data-help="Cíclico: los fotogramas se toman de UNA sola zancada, para que el bucle case. Completo: se reparten por todo el clip, para movimientos que empiezan y acaban, como un ataque o una muerte.">Tipo de movimiento</label>
+              <select id="videoCycle">
+                <option value="0.8" selected>Cíclico</option>
+                <option value="0">Completo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="pose-preview" id="posePreviewBox">
+          <img id="poseGif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Vista previa del ciclo de poses seleccionado">
+          <div id="poseFrames" class="pose-frames"></div>
+        </div>
+
+        <label class="chk" id="animBaseRow" data-help="Parte del sprite que está en el vidrio en lugar de dibujar uno nuevo, para que la animación conserve su identidad. Solo funciona con sprites normales, no con animaciones.">
+          <input type="checkbox" id="animUseBase">
+          <span>Partir del sprite del vidrio</span>
+        </label>
+        <div class="fld" id="animDenoiseRow">
+          <label class="lbl" for="animDenoise" data-help="Más bajo se parece más al sprite de partida pero se mueve menos; más alto le da libertad para moverse a costa de la identidad.">Libertad de movimiento</label>
+          <input type="number" id="animDenoise" value="0.85" min="0.3" max="0.95" step="0.05">
+        </div>
+
+        <div class="acts">
+          <button class="btn camera" id="btnAnimate"><svg class="ic"><use href="#i-video"/></svg> Generar animación</button>
+          <button class="btn hidden" id="btnQueue" title="Varios clips seguidos: cada uno continúa al anterior sin que tengas que esperar delante"><svg class="ic"><use href="#i-chain"/></svg> Cola de clips encadenados…</button>
+        </div>
+        <p class="note" id="animNoteSkeleton">Salida: sprite sheet PNG y GIF. Todos los fotogramas comparten semilla y paleta.<br>Evita props apoyados en el suelo: anclan los brazos.</p>
+        <p class="note hidden" id="animNoteVideo">Parte del sprite del vidrio. Los movimientos suaves salen más nítidos; si un ciclo falla, cambia la semilla.</p>
+      </section>
+
     </div>
-  </header>
 
-  <div class="field">
-    <label class="field-label" for="engine" title="Modelo de IA que genera la imagen. Al cambiarlo se cargan sus pasos/CFG recomendados; los motores sin archivos instalados salen deshabilitados">Motor de generación</label>
-    <select id="engine"></select>
-    <p class="model-note" id="engineDesc"></p>
-  </div>
+      <!-- Hojas ocasionales: tira anclada al pie, siempre a la vista; el cuerpo se despliega al pedirlo -->
+      <div class="rare" id="rare">
+        <nav class="sheet-tabs" id="sheetTabs" aria-label="Otras hojas de trabajo">
+          <button class="stab active" data-sheet="klein"><svg class="ic ic-xs"><use href="#i-klein"/></svg> Klein</button>
+          <button class="stab" data-sheet="terr"><svg class="ic ic-xs"><use href="#i-map"/></svg> Terreno</button>
+          <button class="stab" data-sheet="fx"><svg class="ic ic-xs"><use href="#i-fx"/></svg> Efectos</button>
+          <button class="stab" data-sheet="model3d"><svg class="ic ic-xs"><use href="#i-cube"/></svg> 3D</button>
+          <button class="stab" data-sheet="style"><svg class="ic ic-xs"><use href="#i-style"/></svg> Estilo</button>
+        </nav>
+        <div class="rare-body">
+      <section class="sheet" data-sheet="klein">
+        <div class="fld">
+          <label class="lbl" for="varInstruction" data-help="Qué cambiar del sprite que está en el vidrio, escrito en inglés. Klein edita conservando la identidad del personaje: otras vistas, otro equipamiento, otras expresiones. Añade «no grass» si te mete césped decorativo.">Instrucción <span class="hint">en inglés</span></label>
+          <textarea id="varInstruction" rows="3" placeholder="the same character seen from behind / without helmet / holding a torch…"></textarea>
+        </div>
+        <button class="btn camera" id="btnVariation"><svg class="ic"><use href="#i-edit"/></svg> Variar el sprite del vidrio</button>
+        <p class="note">FLUX.2 Klein edita el sprite seleccionado conservando su identidad. Es la vía para armar el set completo de un personaje, o el conjunto de imágenes con el que entrenar tu propio LoRA.</p>
+      </section>
 
-  <div class="field">
-    <label class="field-label" for="subject" title="Qué quieres generar, en inglés (el estilo pixel art lo pone la plantilla global). Si luego vas a animarlo, evita props apoyados en el suelo (espadas clavadas, bastones): anclan los brazos">Descripción del sprite <span class="hint">(en inglés)</span></label>
-    <textarea id="subject" rows="3" placeholder="medieval house with thatched roof, stone walls..."></textarea>
-  </div>
+      <!-- Hoja: Terreno -->
+      <section class="sheet hidden" data-sheet="terr">
+        <div class="fld">
+          <label class="lbl" for="terrainSubject" data-help="Material del suelo, escrito en inglés. Se generan cuatro variantes seamless de 64 px, listas para pintar mapas.">Textura del suelo <span class="hint">en inglés</span></label>
+          <textarea id="terrainSubject" rows="3" placeholder="dense green grass / dry dirt / sand…"></textarea>
+        </div>
+        <button class="btn camera" id="btnTerrain"><svg class="ic"><use href="#i-terrain"/></svg> Generar terreno</button>
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl" for="terrA" data-help="Terreno de relleno del mapa: sus tiles llevan el bit 1 en las dieciséis transiciones Wang.">Terreno A · dominante</label>
+            <select id="terrA"></select>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="terrB" data-help="Terreno de las manchas y los caminos que se funden sobre el terreno A.">Terreno B</label>
+            <select id="terrB"></select>
+          </div>
+        </div>
+        <button class="btn" id="btnTileset"><svg class="ic"><use href="#i-tiles"/></svg> Crear tileset con transiciones</button>
+        <p class="note">Tiles de 64 px seamless (cuatro variantes por terreno), dieciséis piezas de transición y un mapa de prueba. El tileset PNG nativo se importa en Godot o Tiled, donde se pintan los mapas.</p>
+      </section>
 
-  <div class="row">
-    <div class="col">
-      <label class="field-label" for="seed" title="Fija el azar del motor: misma semilla + mismo prompt y parámetros = mismo sprite (así puedes reproducir o iterar un resultado que te gustó). Vacío = aleatoria">Semilla</label>
-      <div class="seed-row">
-        <input type="number" id="seed" placeholder="aleatoria">
-        <button class="btn-icon" id="btnDice" title="Vaciar (usar semilla aleatoria)"><svg class="ic"><use href="#i-clear"/></svg></button>
+      <!-- Hoja: Efectos -->
+      <section class="sheet hidden" data-sheet="fx">
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl" for="fxType" data-help="Animaciones matemáticas con bucle perfecto, instantáneas y sin GPU. «Mecer» y «Bandera» deforman el sprite del vidrio; «Fuego» y «Humo» se dibujan desde cero.">Efecto</label>
+            <select id="fxType">
+              <option value="sway" selected>Mecer</option>
+              <option value="flame">Fuego</option>
+              <option value="wave">Bandera / tela</option>
+              <option value="smoke">Humo</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="fxParam" data-help="En mecer y tela, la amplitud del vaivén en píxeles de rejilla (de 1 a 24). En fuego y humo, el alto del efecto en píxeles (de 24 a 160).">Intensidad</label>
+            <input type="number" id="fxParam" value="4" min="1" max="24">
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl" for="fxFlameKind" data-help="Forma de la llama: antorcha (una lengua alta), fogata (tres lenguas anchas) o vela (fina).">Tipo de fuego</label>
+            <select id="fxFlameKind">
+              <option value="torch">Antorcha</option>
+              <option value="campfire">Fogata</option>
+              <option value="candle">Vela</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="fxColor" data-help="Color hexadecimal de la bandera o la tela cuando NO hay sprite en el vidrio. Si lo hay, se ondea el sprite y este color se ignora.">Color de tela</label>
+            <input type="text" id="fxColor" value="#B22222">
+          </div>
+        </div>
+        <button class="btn camera" id="btnFx"><svg class="ic"><use href="#i-playc"/></svg> Generar efecto</button>
+        <p class="note">Matemática pura con bucle perfecto, instantánea y sin tocar la GPU. «Mecer» usa el sprite del vidrio (un árbol, un arbusto); «Bandera» usa el sprite del vidrio si lo hay, o crea la tela del color indicado.</p>
+      </section>
+
+      <!-- Hoja: 3D -->
+      <section class="sheet hidden" data-sheet="model3d">
+        <!-- Con un SPRITE en el vidrio: convertirlo en modelo 3D -->
+        <div class="fld-stack" id="m3dConvert">
+        <div class="fld">
+          <label class="lbl" for="m3dEngine" data-help="Modelo de IA que reconstruye el objeto en 3D a partir de la imagen del vidrio. TRELLIS.2 deja el modelo recto y alineado con los ejes, listo para sacar varias direcciones. Pixal3D es experimental: desde el ángulo original es más fiel, pero el modelo sale inclinado y deformado en las vistas isométricas.">Motor 3D</label>
+          <select id="m3dEngine"></select>
+          <p class="model-note" id="m3dEngineDesc"></p>
+        </div>
+        <div class="fld">
+          <label class="lbl" for="m3dQuality" data-help="Cuántas caras tiene la malla y de qué tamaño son sus texturas. «Juego» basta para un motor de juego o una escena web y pesa menos; «Detalle» conserva más relieve y nitidez, para mirar el modelo de cerca.">Calidad</label>
+          <select id="m3dQuality"></select>
+        </div>
+        <button class="btn camera" id="btnModel3d"><svg class="ic"><use href="#i-cube"/></svg> Convertir el sprite del vidrio en 3D</button>
+        <p class="note">Parte de la imagen original de la IA, no del sprite pixelizado: con el tramado del pixel art la textura sale manchada. Funciona mejor con el objeto solo y sobre fondo liso, y las caras que no se ven en la imagen se inventan. Tarda de tres a cinco minutos.</p>
+        </div>
+
+        <!-- Con un MODELO 3D en el vidrio: hornearlo a sprites -->
+        <div class="fld-stack hidden" id="m3dBake">
+          <div class="fld">
+            <span class="lbl" data-help="Qué cara del modelo queda de frente. La IA no siempre deja el modelo mirando como tu dibujo: gíralo en pasos de 90° hasta que la primera dirección sea la que quieres. Se guarda con el modelo.">Orientación</span>
+            <div class="orient-row">
+              <button class="btn-mini" id="bakeRotL" title="Girar el modelo 90° a la izquierda">⟲ 90°</button>
+              <span class="orient-val" id="bakeYaw">0°</span>
+              <button class="btn-mini" id="bakeRotR" title="Girar el modelo 90° a la derecha">90° ⟳</button>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="fld">
+              <label class="lbl" for="bakeView" data-help="Ángulo de la cámara del horneado; el visor lo muestra en cuanto lo eliges. Isométrica 2:1 es la del pixel art clásico, con tiles en rombo el doble de anchos que altos; las vistas cenitales miran de frente a la rejilla, como un juego visto desde arriba.">Vista</label>
+              <select id="bakeView">
+                <option value="iso" selected>Isométrica 2:1 · 30°</option>
+                <option value="iso_real">Isométrica real · 35°</option>
+                <option value="tres_cuartos">Cenital 3/4 · 45°</option>
+                <option value="cenital">Cenital · 60°</option>
+                <option value="frente">Lateral · 0°</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label class="lbl" for="bakeDirs" data-help="Cuántas direcciones se hornean, repartidas en la vuelta completa. Una sola da un sprite normal; varias dan una hoja con una dirección por fotograma. Para edificios en isométrica bastan 4; para personajes y vehículos, 8.">Direcciones</label>
+              <select id="bakeDirs">
+                <option value="1">1 · sprite</option>
+                <option value="4" selected>4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="fld">
+              <label class="lbl" for="bakeScale" data-help="Por tiles: tú dices cuántos tiles ocupa la planta del objeto y todos tus modelos comparten así los mismos píxeles por tile, aunque la IA los normalice a todos al mismo tamaño. Por rejilla: el lado mayor del sprite mide la rejilla del registro.">Escala</label>
+              <select id="bakeScale">
+                <option value="tiles" selected>Por tiles</option>
+                <option value="rejilla">Por rejilla del registro</option>
+              </select>
+            </div>
+            <div class="fld">
+              <label class="lbl" for="bakeLight" data-help="Luz con la que se hornea. Viaja con la cámara, así que todas las direcciones quedan iluminadas igual, desde arriba a la izquierda.">Luz</label>
+              <select id="bakeLight">
+                <option value="dia" selected>Día</option>
+                <option value="atardecer">Atardecer</option>
+                <option value="noche">Noche</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid2" id="bakeTilesRow">
+            <div class="fld">
+              <label class="lbl" for="bakeTiles" data-help="Cuántos tiles ocupa el lado mayor de la planta del objeto: una choza, 2; un castillo, 6. En isométrica cuenta el ancho del rombo del tile.">Tiles de planta</label>
+              <input type="number" id="bakeTiles" value="2" min="0.5" max="64" step="0.5">
+            </div>
+            <div class="fld">
+              <label class="lbl" for="bakeTilePx" data-help="Ancho de un tile en píxeles de rejilla: 64 en los tiles de terreno de este proyecto.">Tile en px</label>
+              <input type="number" id="bakeTilePx" value="64" min="8" max="512" step="8">
+            </div>
+          </div>
+          <p class="model-note" id="bakeEstimate"></p>
+          <button class="btn camera" id="btnBake"><svg class="ic"><use href="#i-cube"/></svg> Hornear sprites</button>
+          <p class="note">Usa los colores y la escala del registro, y la paleta global si la marcas en Generar. Todas las direcciones comparten encuadre y paleta: el objeto cae en el mismo píxel y conserva sus colores al girar.</p>
+
+          <div class="fld">
+            <label class="lbl" for="webPreset" data-help="Copia ligera del modelo para escenas web con Three.js: malla simplificada y comprimida (meshopt) y texturas WebP más pequeñas. La versión «Web» pesa unas cinco veces menos que el original; la «Ligera», unas diez. Para importar en un motor de juego usa el GLB original, que no depende de extensiones.">Versión web</label>
+            <select id="webPreset">
+              <option value="web" selected>Web · texturas de 1024 px</option>
+              <option value="ligero">Ligera · texturas de 512 px y la mitad de caras</option>
+            </select>
+          </div>
+          <button class="btn" id="btnWeb"><svg class="ic"><use href="#i-download"/></svg> Crear versión web</button>
+        </div>
+      </section>
+
+      <!-- Hoja: Estilo -->
+      <section class="sheet hidden" data-sheet="style">
+        <div class="fld">
+          <label class="lbl" for="tpl" data-help="Prompt base que envuelve TODAS tus descripciones y define el estilo común de tus sprites. La marca {subject} se sustituye por lo que escribas en la hoja de generar.">Plantilla de prompt <span class="hint">debe incluir {subject}</span></label>
+          <textarea id="tpl" rows="5"></textarea>
+        </div>
+        <div class="fld">
+          <label class="lbl" for="neg" data-help="Lo que la IA debe EVITAR en todas las generaciones: fondos con escena, aspecto tridimensional, texto, marcos… Ojo: con CFG 1 (Klein, Z-Image, Wan) el negative prompt no tiene ningún efecto.">Negative prompt</label>
+          <textarea id="neg" rows="4"></textarea>
+        </div>
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl" for="loraStrength" data-help="Peso del LoRA de pixel art en SDXL, de 0 a 1,5. Más peso marca más el estilo píxel pero reduce la fidelidad al prompt; 1,0 es el punto dulce.">Fuerza del LoRA</label>
+            <input type="number" id="loraStrength" min="0" max="1.5" step="0.05">
+          </div>
+          <div class="fld">
+            <label class="lbl" for="bgThreshold" data-help="Súbelo si quedan restos de fondo alrededor del sprite; bájalo si el recorte se come partes del propio sprite.">Umbral de fondo</label>
+            <input type="number" id="bgThreshold" min="10" max="200" step="5">
+          </div>
+        </div>
+        <label class="chk" data-help="Aplica automáticamente el detector de sombra de contacto a cada generación nueva. Siempre puedes quitarla después, desde la hoja de exposición, sobre una copia.">
+          <input type="checkbox" id="removeShadow">
+          <span>Quitar la sombra de contacto</span>
+        </label>
+        <button class="btn" id="btnSaveStyle"><svg class="ic"><use href="#i-save"/></svg> Guardar estilo</button>
+        <p class="note">Este estilo se aplica a TODOS los sprites nuevos: cámbialo cuando quieras redefinir su aspecto.</p>
+      </section>
+        </div>
       </div>
-    </div>
-    <div class="col">
-      <label class="field-label" for="native" title="Tamaño REAL del pixel art: píxeles de rejilla del lado mayor. Más rejilla = más detalle y menos look retro. Referencias: 128 = personaje (2 tiles de 64), 192 = edificio">Rejilla (detalle)</label>
-      <select id="native">
-        <option value="64">64 px · prop pequeño (1 tile)</option>
-        <option value="96">96 px · objeto simple</option>
-        <option value="128">128 px · personaje</option>
-        <option value="160">160 px</option>
-        <option value="192" selected>192 px · edificio</option>
-        <option value="256">256 px · muy detallado</option>
-        <option value="320">320 px · castillo enorme</option>
-      </select>
-    </div>
-  </div>
 
-  <div class="row params">
-    <div class="col"><label class="field-label" for="colors" title="Paleta de la cuantización (4–128): a cuántos colores se reduce el sprite. Menos = look retro más marcado (consolas clásicas); más = degradados suaves. 32 es un buen equilibrio">Colores</label><input type="number" id="colors" value="32" min="4" max="128"></div>
-    <div class="col"><label class="field-label" for="scale" title="Reescalado nítido del PNG final (×1–×12, nearest). NO añade detalle: solo agranda cada píxel para ver/exportar cómodo. El asset real es la rejilla nativa">Escala</label><input type="number" id="scale" value="6" min="1" max="12"></div>
-    <div class="col"><label class="field-label" for="steps" title="Iteraciones de refinado del motor (1–80). Más pasos = más lento con mejora decreciente. Cada motor tiene su punto óptimo: SDXL 28, Z-Image 9, Klein 4 (destilados: subirles pasos NO mejora)">Pasos</label><input type="number" id="steps" value="28" min="1" max="80"></div>
-    <div class="col"><label class="field-label" for="cfg" title="Cuánto obedece la IA al prompt (1–20). Bajo = más libertad creativa; alto = más literal pero quemado/saturado. SDXL rinde en 5–9; Klein y Z-Image son destilados y DEBEN ir a 1">CFG</label><input type="number" id="cfg" value="7.5" min="1" max="20" step="0.5"></div>
-  </div>
-
-  <label class="check-row" id="paletteRow" title="Cuantiza con la paleta global fija (se crea con «Usar como paleta global» desde un sprite del visor) en vez de elegir colores automáticos: así todos tus sprites comparten los mismos colores">
-    <input type="checkbox" id="usePalette" disabled>
-    <span>Usar paleta global</span>
-  </label>
-  <div id="paletteSwatches" class="swatches"></div>
-
-  <label class="check-row" title="Envía tu texto TAL CUAL al motor: ignora la plantilla de estilo pixel art y el negative prompt globales. Afecta tanto a «Generar» como a «Variación de personaje». Para crear cualquier tipo de imagen; el resultado igualmente pasa por el pixelizador y la imagen sin tocar queda en «Original IA»">
-    <input type="checkbox" id="rawPrompt">
-    <span>Prompt libre (ignora la plantilla de estilo)</span>
-  </label>
-
-  <div class="actions">
-    <button class="btn primary" id="btnGen"><svg class="ic"><use href="#i-play"/></svg> Generar</button>
-    <div class="row">
-      <button class="btn" id="btnVar" title="Mismo prompt, semilla nueva"><svg class="ic"><use href="#i-var"/></svg> Variación</button>
-      <button class="btn" id="btnRepeat" title="Repetir con la semilla del sprite en pantalla"><svg class="ic"><use href="#i-replay"/></svg> Misma semilla</button>
-    </div>
-  </div>
-
-  <details class="style-panel">
-    <summary><svg class="ic"><use href="#i-video"/></svg> Animación</summary>
-    <div class="row">
-      <div class="col">
-        <label class="field-label" for="animMethod" title="Esqueleto: ControlNet sigue poses exactas frame a frame (~1 min/frame). Video: Wan 2.2 genera un clip y se muestrean frames — identidad perfecta entre frames, tarda varios minutos">Método</label>
-        <select id="animMethod">
-          <option value="skeleton" selected>Esqueleto (ControlNet)</option>
-          <option value="video">Video (Wan 2.2)</option>
-        </select>
-      </div>
-      <div class="col">
-        <label class="field-label" for="animNative" title="Rejilla nativa de cada frame. 128 recomendado para personajes (2 tiles de alto); 64 para props de 1 tile (fuego, banderas). Con el método video, 256 apura el límite del clip (Wan genera a 512 px)">Rejilla por frame</label>
-        <select id="animNative">
-          <option value="64">64 px · prop</option>
-          <option value="96">96 px</option>
-          <option value="128" selected>128 px · personaje</option>
-          <option value="160">160 px</option>
-          <option value="192">192 px</option>
-          <option value="256">256 px · máximo</option>
-        </select>
-      </div>
-    </div>
-    <div class="row" id="animKindRow">
-      <div class="col">
-        <label class="field-label" for="animKind" title="Ciclo de poses que guía el esqueleto (abajo se previsualiza). Puedes añadir ciclos propios en assets/poses/&lt;nombre&gt;/frame_XX.png">Ciclo</label>
-        <select id="animKind"></select>
-      </div>
-    </div>
-    <div id="videoUI" class="panel-group hidden">
-      <label class="field-label" for="videoEngine" title="Modelo imagen→video. El 14B (MoE de dos expertos) es el bueno; el 5B es rápido pero pierde el estilo. La versión «libre» no pixeliza nada: devuelve el clip tal cual">Modelo de video</label>
-      <select id="videoEngine"></select>
-      <p class="model-note" id="videoEngineDesc"></p>
-      <label class="field-label" for="videoMotion" title="Movimiento que hará el sprite del visor en el clip, en inglés. Movimientos suaves = frames más nítidos (Wan desenfoca cara/manos en movimientos rápidos)">Movimiento <span class="hint">(en inglés)</span></label>
-      <input type="text" id="videoMotion" placeholder="walk cycle / idle breathing / attack slash">
-      <label class="field-label" for="videoLength" title="Duración del clip que genera el modelo. Wan se entrenó con clips de 5 s: más allá el personaje empieza a derivar. En modo pixel art solo se muestrea una zancada, así que un clip corto genera igual de bien y tarda menos">Duración del clip</label>
-      <select id="videoLength">
-        <option value="49">3,1 s</option>
-        <option value="81" selected>5,1 s</option>
-        <option value="121">7,6 s</option>
-      </select>
-      <p class="model-note hidden" id="chainNote"></p>
-      <div class="row" id="videoPixelRow">
-        <div class="col">
-          <label class="field-label" for="videoFrames" title="Cuántos frames del clip forman el ciclo final">Frames a extraer</label>
-          <select id="videoFrames">
-            <option value="6">6</option>
-            <option value="8" selected>8</option>
-            <option value="10">10</option>
-            <option value="12">12</option>
+    <!-- Los números registran contra la barra: se ven siempre, sea cual sea la hoja abierta -->
+    <div class="registry">
+      <p class="registry-title">Registro</p>
+      <div class="registry-grid">
+        <div class="fld span2">
+          <label class="lbl" for="seed" data-help="Fija el azar del motor: la misma semilla con el mismo prompt y los mismos parámetros produce exactamente el mismo sprite, así puedes reproducir o iterar un resultado que te gustó. Déjala vacía para que sea aleatoria.">Semilla</label>
+          <div class="seed-row">
+            <input type="number" id="seed" placeholder="aleatoria">
+            <button class="btn-icon" id="btnDice" title="Vaciar la semilla (usar una aleatoria)"><svg class="ic"><use href="#i-clear"/></svg></button>
+          </div>
+        </div>
+        <div class="fld span2">
+          <label class="lbl" for="native" data-help="Tamaño REAL del pixel art: píxeles de rejilla del lado mayor. Más rejilla es más detalle y menos aspecto retro. Referencias: 128 px es un personaje (dos tiles de 64), 192 px un edificio.">Rejilla</label>
+          <select id="native">
+            <option value="64">64 px · prop</option>
+            <option value="96">96 px · objeto</option>
+            <option value="128">128 px · personaje</option>
+            <option value="160">160 px</option>
+            <option value="192" selected>192 px · edificio</option>
+            <option value="256">256 px · detallado</option>
+            <option value="320">320 px · enorme</option>
           </select>
         </div>
-        <div class="col">
-          <label class="field-label" for="videoCycle" title="Cíclico: los frames se toman de UNA sola zancada, para que el bucle case. Completo: se reparten por todo el clip, para movimientos que empiezan y acaban (ataque, muerte)">Tipo de movimiento</label>
-          <select id="videoCycle">
-            <option value="0.8" selected>Cíclico</option>
-            <option value="0">Completo</option>
-          </select>
+        <div class="fld">
+          <label class="lbl" for="colors" data-help="Colores de la cuantización, de 4 a 128: a cuántos se reduce el sprite. Menos colores marcan más el aspecto retro de las consolas clásicas; más permiten degradados suaves. 32 es un buen equilibrio.">Colores</label>
+          <input type="number" id="colors" value="32" min="4" max="128">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="scale" data-help="Reescalado nítido del PNG final, de ×1 a ×12. NO añade detalle: solo agranda cada píxel para verlo y exportarlo cómodo. El asset real sigue siendo la rejilla nativa.">Escala</label>
+          <input type="number" id="scale" value="6" min="1" max="12">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="steps" data-help="Iteraciones de refinado del motor, de 1 a 80. Más pasos es más lento con una mejora cada vez menor, y cada motor tiene su punto óptimo: SDXL 28, Z-Image 9, Klein 4. A los modelos destilados subirles pasos NO los mejora.">Pasos</label>
+          <input type="number" id="steps" value="28" min="1" max="80">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="cfg" data-help="Cuánto obedece la IA al prompt, de 1 a 20. Bajo da más libertad creativa; alto es más literal pero quema y satura. SDXL rinde entre 5 y 9; Klein y Z-Image son destilados y DEBEN ir a 1.">CFG</label>
+          <input type="number" id="cfg" value="7.5" min="1" max="20" step="0.5">
         </div>
       </div>
     </div>
-    <div class="pose-preview" id="posePreviewBox">
-      <img id="poseGif" alt="vista previa del ciclo de poses" title="Así se moverá el esqueleto que guía la animación">
-      <div id="poseFrames" class="pose-frames"></div>
-    </div>
-    <label class="check-row" id="animBaseRow">
-      <input type="checkbox" id="animUseBase">
-      <span>Partir del sprite en pantalla (conserva su identidad)</span>
-    </label>
-    <div class="row" id="animDenoiseRow">
-      <div class="col">
-        <label class="field-label" for="animDenoise" title="Más bajo = más parecido al sprite base pero más estático; más alto = más libertad para moverse">Libertad de movimiento</label>
-        <input type="number" id="animDenoise" value="0.85" min="0.3" max="0.95" step="0.05">
-      </div>
-    </div>
-    <button class="btn" id="btnAnimate"><svg class="ic"><use href="#i-video"/></svg> Generar animación</button>
-    <button class="btn hidden" id="btnQueue" title="Varios clips seguidos: cada uno continúa al anterior sin que tengas que esperar">⛓ Cola de clips encadenados…</button>
-    <p class="note" id="animNoteSkeleton">Salida: sprite sheet PNG + GIF. Todos los frames comparten semilla y paleta.<br>Evita props apoyados en el suelo (espadas clavadas, bastones): anclan los brazos.</p>
-    <p class="note hidden" id="animNoteVideo">Parte del sprite del visor. Movimientos suaves salen más nítidos; si un ciclo falla, cambia la semilla.</p>
-  </details>
+  </aside>
 
-  <details class="style-panel">
-    <summary><svg class="ic"><use href="#i-klein"/></svg> Variación de personaje (Klein)</summary>
-    <label class="field-label" for="varInstruction" title="Qué cambiar del sprite del visor, en inglés. Klein edita conservando la identidad: otras vistas, equipamiento, expresiones. Añade «no grass» si mete césped decorativo">Instrucción <span class="hint">(en inglés)</span></label>
-    <textarea id="varInstruction" rows="2" placeholder="the same character seen from behind / without helmet / holding a torch..."></textarea>
-    <button class="btn" id="btnVariation"><svg class="ic"><use href="#i-edit"/></svg> Variar el sprite del visor</button>
-    <p class="note">FLUX.2 Klein edita el sprite seleccionado conservando su identidad: otras vistas, equipamiento, expresiones. Ideal para armar el set completo de un personaje o el dataset con el que entrenar tu propio LoRA.</p>
-  </details>
+  <!-- ══ El vidrio: el único plano iluminado de la mesa ══ -->
+  <main class="lightbox">
+    <div class="glass" id="glassBox" data-lit="on">
+      <img class="rune rune-tl" src="esquina.png" alt="" aria-hidden="true">
+      <img class="rune rune-tr" src="esquina.png" alt="" aria-hidden="true">
+      <img class="rune rune-bl" src="esquina.png" alt="" aria-hidden="true">
+      <img class="rune rune-br" src="esquina.png" alt="" aria-hidden="true">
 
-  <details class="style-panel">
-    <summary><svg class="ic"><use href="#i-map"/></svg> Terreno y mapas</summary>
-    <label class="field-label" for="terrainSubject" title="Material del suelo, en inglés. Se generan 4 variantes seamless de 64 px listas para pintar mapas">Textura del suelo <span class="hint">(en inglés)</span></label>
-    <textarea id="terrainSubject" rows="2" placeholder="dense green grass / dry dirt / sand..."></textarea>
-    <button class="btn" id="btnTerrain"><svg class="ic"><use href="#i-terrain"/></svg> Generar terreno (usa GPU)</button>
-    <div class="row">
-      <div class="col">
-        <label class="field-label" for="terrA" title="Terreno de relleno del mapa: sus tiles llevan el bit 1 en las 16 transiciones Wang">Terreno A (dominante)</label>
-        <select id="terrA"></select>
+      <div class="glass-empty" id="viewerEmpty">
+        <svg class="ic ic-big"><use href="#i-brush"/></svg>
+        <p class="empty-head">La mesa está despejada</p>
+        <p class="empty-body">Describe un sprite en la hoja <b>Generar</b> y pulsa <b>Generar</b>.<br>
+          El primer arranque del motor tarda alrededor de un minuto más.</p>
       </div>
-      <div class="col">
-        <label class="field-label" for="terrB" title="Terreno de las manchas/caminos que se funden sobre A">Terreno B</label>
-        <select id="terrB"></select>
+
+      <div class="stage" id="stage">
+        <div class="onion onion-2" id="onion2"></div>
+        <div class="onion onion-1" id="onion1"></div>
+        <img id="bigImg" class="hidden" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Sprite generado">
+        <div class="frame-slice hidden" id="frameSlice"></div>
+      </div>
+      <!-- El visor 3D: lienzo transparente sobre el vidrio (visor3d.js) -->
+      <div class="viewer3d hidden" id="viewer3d">
+        <p class="viewer3d-msg hidden" id="viewer3dMsg"></p>
       </div>
     </div>
-    <button class="btn" id="btnTileset"><svg class="ic"><use href="#i-tiles"/></svg> Crear tileset con transiciones</button>
-    <p class="note">Tiles de 64 px seamless (4 variantes por terreno) + 16 piezas de transición + mapa de prueba. El tileset PNG nativo se importa en Godot/Tiled, donde se pintan los mapas.</p>
-  </details>
 
-  <details class="style-panel">
-    <summary><svg class="ic"><use href="#i-fx"/></svg> Efectos ambientales (sin GPU)</summary>
-    <div class="row">
-      <div class="col">
-        <label class="field-label" for="fxType" title="Animaciones matemáticas con loop perfecto, instantáneas y sin GPU. Mecer y Tela deforman el sprite del visor; Fuego y Humo se dibujan desde cero">Efecto</label>
-        <select id="fxType">
-          <option value="sway" selected>Mecer (sprite del visor)</option>
-          <option value="flame">Fuego</option>
-          <option value="wave">Bandera / tela</option>
-          <option value="smoke">Humo</option>
-        </select>
-      </div>
-      <div class="col">
-        <label class="field-label" for="fxParam" title="Mecer/tela: amplitud del vaivén en px de rejilla (1–24). Fuego/humo: alto del efecto en px (24–160)">Intensidad / tamaño</label>
-        <input type="number" id="fxParam" value="4" min="1" max="24">
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <label class="field-label" for="fxFlameKind" title="Forma de la llama: antorcha (1 lengua alta), fogata (3 lenguas anchas) o vela (fina)">Tipo de fuego</label>
-        <select id="fxFlameKind">
-          <option value="torch">Antorcha</option>
-          <option value="campfire">Fogata</option>
-          <option value="candle">Vela</option>
-        </select>
-      </div>
-      <div class="col">
-        <label class="field-label" for="fxColor" title="Color hex de la bandera/tela cuando NO hay sprite en el visor (si lo hay, se ondea el sprite)">Color de tela</label>
-        <input type="text" id="fxColor" value="#B22222">
-      </div>
-    </div>
-    <button class="btn" id="btnFx"><svg class="ic"><use href="#i-playc"/></svg> Generar efecto</button>
-    <p class="note">Matemática pura con loop perfecto, instantáneo. «Mecer» usa el sprite del visor (árbol, arbusto); «Bandera» usa el sprite del visor si hay uno, o crea la tela del color indicado.</p>
-  </details>
-
-  <details class="style-panel">
-    <summary><svg class="ic"><use href="#i-style"/></svg> Estilo global</summary>
-    <label class="field-label" for="tpl" title="Prompt base que envuelve TODAS tus descripciones: define el estilo común de tus sprites. {subject} se sustituye por lo que escribas arriba">Plantilla de prompt (debe incluir <code>{subject}</code>)</label>
-    <textarea id="tpl" rows="4"></textarea>
-    <label class="field-label" for="neg" title="Lo que la IA debe EVITAR en todas las generaciones (fondos con escena, 3D, texto, marcos...)">Negative prompt</label>
-    <textarea id="neg" rows="3"></textarea>
-    <div class="row">
-      <div class="col"><label class="field-label" for="loraStrength" title="Peso del LoRA de pixel art en SDXL (0–1.5): más = estilo píxel más marcado pero menos fidelidad al prompt; 1.0 es el punto dulce">Fuerza del LoRA</label><input type="number" id="loraStrength" min="0" max="1.5" step="0.05"></div>
-      <div class="col"><label class="field-label" for="bgThreshold" title="Súbelo si quedan restos de fondo; bájalo si se come partes del sprite">Umbral quitar fondo</label><input type="number" id="bgThreshold" min="10" max="200" step="5"></div>
-    </div>
-    <label class="check-row">
-      <input type="checkbox" id="removeShadow">
-      <span>Quitar la sombra de contacto automáticamente</span>
-    </label>
-    <button class="btn" id="btnSaveStyle"><svg class="ic"><use href="#i-save"/></svg> Guardar estilo</button>
-    <p class="note">Este estilo se aplica a TODOS los sprites: cámbialo cuando quieras redefinir su look.</p>
-  </details>
-
-  <footer class="status-bar">
-    <span><span class="dot" id="engineDot"></span> <span id="engineText">Motor IA: ...</span></span>
-    <button class="btn-mini" id="btnEngineOff" title="Libera la RAM/VRAM. Se enciende solo al generar."><svg class="ic ic-xs"><use href="#i-power"/></svg> Apagar motor</button>
-    <button class="btn-mini hidden" id="btnReveal" title="Muestra u oculta en el historial los elementos marcados con el ojo. Solo afecta a la app: sus archivos siguen ocultos en el Explorador"></button>
-  </footer>
-</aside>
-
-<main class="main">
-  <div class="viewer-row">
-    <section class="viewer viewer-arcano" id="viewerBox">
-      <img class="corner corner-tr" src="esquina.png" alt="" aria-hidden="true">
-      <img class="corner corner-tl" src="esquina.png" alt="" aria-hidden="true">
-      <img class="corner corner-br" src="esquina.png" alt="" aria-hidden="true">
-      <img class="corner corner-bl" src="esquina.png" alt="" aria-hidden="true">
-      <div class="viewer-empty" id="viewerEmpty">
-        <p><svg class="ic ic-big"><use href="#i-brush"/></svg></p>
-        <p>Escribe una descripción y pulsa <b>Generar</b>.<br>El primer arranque del motor tarda ~1 min extra.</p>
-      </div>
-      <img id="bigImg" class="checker hidden" alt="sprite generado">
-      <div class="toggle viewer-tabs hidden" id="viewerBar">
+    <div class="glass-foot hidden" id="viewerBar">
+      <div class="foot-tabs">
+        <button class="tab hidden" id="tab3d" title="El modelo 3D: arrastra para girarlo y usa la rueda para acercarlo"><svg class="ic ic-xs"><use href="#i-cube"/></svg> 3D</button>
+        <button class="tab hidden" id="tab3dWeb" title="La versión web del modelo, tal como la cargará Three.js"><svg class="ic ic-xs"><use href="#i-cube"/></svg> 3D web</button>
         <button class="tab active" id="tabSprite">Sprite</button>
         <button class="tab" id="tabRaw">Original IA</button>
-        <button class="tab hidden" id="tabVideo" title="El clip original completo que generó Wan">Video Wan</button>
+        <button class="tab hidden" id="tabFrames"><svg class="ic ic-xs"><use href="#i-frames"/></svg> Hoja</button>
+        <button class="tab hidden" id="tabVideo" title="El clip original completo que generó Wan">Vídeo Wan</button>
       </div>
-    </section>
-    <aside class="side-panel hidden" id="sidePanel">
-      <button class="panel-toggle" id="btnPanel" title="Plegar o desplegar el panel de detalles">
+      <p class="spec" id="specLine"></p>
+      <div class="foot-tools">
+        <div class="ruler" id="scaleRuler" role="group" aria-label="Escala de visualización">
+          <button class="rule-btn" data-k="fit">Ajustar</button>
+          <button class="rule-btn" data-k="1">×1</button>
+          <button class="rule-btn" data-k="2">×2</button>
+          <button class="rule-btn" data-k="4">×4</button>
+          <button class="rule-btn" data-k="6">×6</button>
+        </div>
+        <div class="ruler hidden" id="camRuler" role="group" aria-label="Vista de la cámara 3D">
+          <button class="rule-btn" data-cam="iso" title="Elevación de 30° girada 45°: la isometría 2:1 del pixel art">Isométrica</button>
+          <button class="rule-btn" data-cam="cenital" title="Elevación de 60°, de frente: la vista de un juego cenital">Cenital</button>
+          <button class="rule-btn" data-cam="frente" title="A ras de suelo, de frente">Frente</button>
+          <button class="rule-btn" data-cam="girar" title="Gira el modelo sobre sí mismo con la luz fija, como al sacar sus direcciones">Girar</button>
+        </div>
+        <button class="btn-mini" id="btnLight" title="Enciende o apaga el vidrio. Con la luz apagada juzgas el sprite sobre fondo oscuro, como se verá en el mapa."><svg class="ic ic-xs"><use href="#i-light"/></svg> Luz</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ══ La hoja de exposición ══ -->
+  <aside class="xsheet hidden" id="sidePanel">
+    <div class="xsheet-head">
+      <h2>Hoja de exposición</h2>
+      <button class="panel-toggle" id="btnPanel" title="Plegar o desplegar la hoja de exposición">
         <svg class="ic"><use id="btnPanelIcon" href="#i-collapse"/></svg>
       </button>
-      <div class="panel-body">
-        <div class="chips" id="metaChips"></div>
-        <div class="plabel">Prompt</div>
-        <div class="prompt-box" id="promptBox"></div>
-        <div class="side-actions">
-          <button class="btn-side" id="btnFav" title="Marcar como favorito: candidato al dataset para entrenar tu propio LoRA, un modelo personalizado con tu estilo. Se guarda en los metadatos"></button>
-          <button class="btn-side" id="btnMakePalette" title="Fijar los colores de este sprite como paleta común de todas tus generaciones"><svg class="ic"><use href="#i-palette"/></svg> Usar como paleta global</button>
-          <button class="btn-side" id="btnUnshadow" title="Crea una COPIA de este sprite sin la sombra de contacto; el original no se toca"><svg class="ic"><use href="#i-brush"/></svg> Quitar sombra</button>
-          <button class="btn-side" id="btnHide" title="Lo saca del historial y marca sus archivos como ocultos para el Explorador de Windows. Reversible: se recupera con el interruptor de la barra de estado"></button>
-          <div class="side-sep"></div>
-          <button class="btn-side danger" id="btnDelete" title="Eliminar esta generación y borrar sus archivos del disco"><svg class="ic"><use href="#i-del"/></svg> Eliminar</button>
-        </div>
+    </div>
+    <div class="panel-body">
+      <div class="xs-rows" id="metaChips"></div>
+      <p class="plabel">Prompt</p>
+      <div class="prompt-box" id="promptBox"></div>
+      <div class="xs-frames hidden" id="xsFrames"></div>
+      <div class="side-actions">
+        <button class="btn-side" id="btnFav" title="Marcar como favorito: candidato al conjunto de imágenes con el que entrenar tu propio LoRA. Se guarda en los metadatos."></button>
+        <a class="btn-side hidden" id="btnGlb" download title="Descarga el modelo en GLB, el formato que abren Godot, Blender y Three.js"><svg class="ic"><use href="#i-download"/></svg> Descargar GLB</a>
+        <div class="side-links" id="glbWebLinks"></div>
+        <button class="btn-side" id="btnMakePalette" title="Fijar los colores de este sprite como paleta común de todas tus generaciones"><svg class="ic"><use href="#i-palette"/></svg> Usar como paleta global</button>
+        <button class="btn-side" id="btnUnshadow" title="Crea una COPIA de este sprite sin la sombra de contacto; el original no se toca"><svg class="ic"><use href="#i-brush"/></svg> Quitar sombra</button>
+        <button class="btn-side" id="btnHide" title="Lo saca del archivo y marca sus archivos como ocultos para el Explorador de Windows. Es reversible desde la barra de registro."></button>
+        <button class="btn-side strike" id="btnDelete" title="Eliminar esta generación y borrar sus archivos del disco"><svg class="ic"><use href="#i-del"/></svg> Eliminar</button>
       </div>
-    </aside>
-  </div>
+    </div>
+  </aside>
+</div>
 
-  <section class="history-section">
-    <h3>Historial <span id="favCount" class="hint" title="Favoritos marcados: con 30-50 ya se puede entrenar un LoRA propio"></span></h3>
-    <div class="history" id="history"></div>
-  </section>
-</main>
+<!-- ══ El archivo: hojas con el canto rotulado ══ -->
+<section class="bin" id="bin">
+  <header class="bin-head">
+    <button class="bin-toggle" id="btnBin" title="Plegar o desplegar el archivo"><svg class="ic ic-xs"><use href="#i-collapse"/></svg></button>
+    <h2>Archivo <span id="binCount" class="bin-count"></span></h2>
+    <span id="favCount" class="hint"></span>
+    <div class="bin-filters" id="binFilters">
+      <button class="pill active" data-kind="all">Todo</button>
+      <button class="pill" data-kind="sprite"><i class="pencil pencil-sprite"></i> Sprites</button>
+      <button class="pill" data-kind="animation"><i class="pencil pencil-animation"></i> Animaciones</button>
+      <button class="pill" data-kind="terrain"><i class="pencil pencil-terrain"></i> Terreno</button>
+      <button class="pill" data-kind="model3d"><i class="pencil pencil-model3d"></i> 3D</button>
+      <button class="pill" data-kind="fav"><svg class="ic ic-xs"><use href="#i-star-f"/></svg> Favoritos</button>
+      <button class="pill pill-act" id="btnImport" title="Añadir imágenes tuyas al archivo (PNG, JPG, WebP…). Entran tal cual, sin recortar fondo ni pixelizar, y desde ahí puedes animarlas por video, pedir una variación o pixelizarlas. Puedes elegir varias a la vez."><svg class="ic ic-xs"><use href="#i-plus"/></svg> Importar</button>
+      <input type="file" id="importFile" accept="image/*" multiple hidden>
+    </div>
+    <label class="bin-search">
+      <svg class="ic ic-xs"><use href="#i-search"/></svg>
+      <input type="search" id="binSearch" placeholder="Buscar en el archivo…" aria-label="Buscar en el archivo">
+    </label>
+  </header>
+  <div class="bin-rows" id="history"></div>
+</section>
 
 <!-- Cola de clips: varios prompts que se generan y encadenan solos -->
-<div class="overlay hidden" id="queueModal">
-  <div class="modal">
+<div class="shade hidden" id="queueModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="queueTitle">
     <header class="modal-head">
-      <h2><svg class="ic"><use href="#i-video"/></svg> Cola de clips encadenados</h2>
-      <button class="btn-icon" id="queueClose" title="Cerrar">✕</button>
+      <h2 id="queueTitle"><svg class="ic"><use href="#i-chain"/></svg> Cola de clips encadenados</h2>
+      <button class="btn-icon" id="queueClose" title="Cerrar"><svg class="ic"><use href="#i-x"/></svg></button>
     </header>
     <p class="model-note" id="queueBase"></p>
-    <div class="row">
-      <div class="col">
-        <label class="field-label" for="queueEngine">Modelo de video</label>
+    <div class="grid2">
+      <div class="fld">
+        <label class="lbl" for="queueEngine">Modelo de vídeo</label>
         <select id="queueEngine"></select>
       </div>
-      <div class="col">
-        <label class="field-label" for="queueLength" title="Duración de CADA clip de la cola">Duración por clip</label>
+      <div class="fld">
+        <label class="lbl" for="queueLength" data-help="Duración de CADA clip de la cola. A 768×768 el punto dulce son 81 fotogramas: subir a 121 multiplica por siete el tiempo por paso.">Duración por clip</label>
         <select id="queueLength"></select>
       </div>
     </div>
-    <label class="field-label">Prompts <span class="hint">(uno por clip, en orden)</span></label>
+    <p class="plabel">Prompts <span class="hint">uno por clip, en orden</span></p>
     <div id="queueList"></div>
-    <button class="btn btn-mini" id="queueAdd">＋ Añadir clip</button>
+    <button class="btn-mini" id="queueAdd"><svg class="ic ic-xs"><use href="#i-plus"/></svg> Añadir clip</button>
     <p class="note" id="queueSummary"></p>
     <div class="modal-actions">
       <button class="btn" id="queueCancelBtn">Cerrar</button>
-      <button class="btn primary" id="queueRun"><svg class="ic"><use href="#i-play"/></svg> Generar cola</button>
+      <button class="btn camera" id="queueRun"><svg class="ic"><use href="#i-play"/></svg> Generar la cola</button>
     </div>
-    <p class="note">Cada clip arranca del último frame del anterior. Puedes cerrar el navegador: la cola sigue en el servidor.</p>
+    <p class="note">Cada clip arranca del último fotograma del anterior. Puedes cerrar el navegador: la cola sigue corriendo en el servidor.</p>
   </div>
 </div>
 
-<div class="overlay hidden" id="overlay">
-  <div class="spinner"></div>
-  <p id="overlayMsg">Generando…</p>
-  <button class="btn hidden" id="btnQueueStop" title="Para la cola después del clip que se está generando; lo ya generado se conserva">Detener la cola tras este clip</button>
-</div>
-
-<script src="app.js"></script>
+<script src="app.js?v=20261016f"></script>
 </body>
 </html>

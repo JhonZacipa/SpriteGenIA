@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "app/static/index.html"
+        ],
+        "createdAt": "2026-09-02T14:24:39.205Z",
+        "reason": "Claude: #jobPeek y #jobPeekBig reciben src por JS al llegar el primer preview en vivo; su contenedor lleva .hidden hasta entonces, nunca se pintan rotas"
+      }
+    ]
+  }
+}

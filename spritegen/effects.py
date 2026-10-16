@@ -237,8 +237,10 @@ def export_effect(
     gif_max_side: int = 384,
     anim_format: str = "gif",
     raw_video: bool = False,
+    engine: str | None = None,
     parent: str | None = None,
     segments: list[int] | None = None,
+    extra: dict | None = None,
 ) -> Path:
     """Escala los frames (nearest), arma el sheet y el GIF, y registra la
     animación en el historial. Devuelve la ruta del GIF.
@@ -247,7 +249,9 @@ def export_effect(
     guarda como GIF en output/raw/ para poder verlo desde la GUI.
     sheet_cols: columnas del sprite sheet. Por defecto una sola fila, que es
     lo que espera un motor de juego; los clips largos (video libre, decenas de
-    frames) necesitan cuadrícula para no salir un PNG imposible de ancho."""
+    frames) necesitan cuadrícula para no salir un PNG imposible de ancho.
+    extra: campos propios del origen que se añaden a la ficha (p. ej. los
+    ajustes de un horneado 3D); pisan a los genéricos si coinciden."""
     meta_dir = PROJECT_ROOT / "output" / "meta"
     meta_dir.mkdir(parents=True, exist_ok=True)
     slug = unique_stem(meta_dir, f"{slugify(subject, 28)}_{name}")
@@ -312,6 +316,10 @@ def export_effect(
         # El GIF principal ES el clip del modelo, no un preview de sprites: la
         # GUI etiqueta su pestaña como «Video» y no ofrece la de comparación
         "raw_video": raw_video,
+        # Qué motor lo generó, cuando lo hubo: los efectos son matemática
+        # pura y no tienen ninguno. Sin esto la GUI no puede decir el
+        # modelo de un clip, solo su método.
+        "engine": engine,
         # Encadenado: de qué clip se extendió y cuántos frames aportó cada
         # tramo. El padre sigue en el historial con sus propios archivos, así
         # que borrar cualquiera de los dos no rompe al otro
@@ -326,6 +334,8 @@ def export_effect(
         "cfg": 0,
         "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
+    if extra:
+        meta.update(extra)
     (meta_dir / f"{slug}.json").write_text(
         json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"
     )

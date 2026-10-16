@@ -1,0 +1,9 @@
+{
+  "name": "spritegen-gltf-tools",
+  "private": true,
+  "description": "Herramientas de Node para la versión web de los modelos 3D (spritegen web3d). Se instalan con `npm install` en esta carpeta.",
+  "license": "MIT",
+  "dependencies": {
+    "@gltf-transform/cli": "4.5.1"
+  }
+}

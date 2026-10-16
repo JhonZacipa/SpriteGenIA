@@ -15,6 +15,8 @@ requests==2.34.2   # HTTP contra ComfyUI (127.0.0.1:8188) y subida de imagenes
 fastapi==0.141.1   # API local del servidor (app/server.py)
 uvicorn==0.52.4    # servidor ASGI que sirve la GUI en 127.0.0.1:8787
 pydantic==2.13.4   # validacion de los cuerpos JSON de la API
+websocket-client==1.9.2  # escucha del WS de ComfyUI: paso de muestreo y preview en vivo
+                         # (opcional: sin el, livefeed.py se desactiva solo y todo sigue andando)
 
 # Nota: si tu .venv trae ademas scikit-learn, scipy, joblib, threadpoolctl o
 # narwhals, son restos de una instalacion antigua. El k-means de pixelize.py

@@ -258,6 +258,57 @@
         "raw_output": true,
         "raw_prompt": true
       }
+    },
+    {
+      "id": "trellis2",
+      "label": "TRELLIS.2 4B · imagen a 3D",
+      "kind": "model3d",
+      "arch": "trellis2",
+      "description": "Convierte la imagen del sprite en un modelo 3D texturizado (GLB con color, relieve y oclusión), recto y alineado con los ejes. Microsoft, licencia MIT. De 3 a 5 minutos por modelo.",
+      "files": {
+        "diffusion_models": ["trellis_2_int8_convrot.safetensors|trellis_2_bf16.safetensors"],
+        "vae": ["trellis_2_shape_vae_bf16.safetensors", "trellis_2_texture_vae_bf16.safetensors"],
+        "clip_vision": ["dino_v3_L_naf_fp32.safetensors|dino_v3_vit_l.safetensors"],
+        "background_removal": ["birefnet.safetensors"]
+      },
+      "params": {
+        "cascade": 1024,
+        "remesh": 512,
+        "remesh_precluster": 2000000,
+        "pad_factor": 1.0,
+        "quality": "juego",
+        "qualities": {
+          "juego": {"label": "Juego · 60 000 caras, textura 1024", "faces": 60000, "texture": 1024},
+          "detalle": {"label": "Detalle · 200 000 caras, textura 2048", "faces": 200000, "texture": 2048}
+        },
+        "timeout": 1800
+      }
+    },
+    {
+      "id": "pixal3d_lab",
+      "label": "Pixal3D · imagen a 3D · LAB",
+      "kind": "model3d",
+      "arch": "pixal3d",
+      "description": "EXPERIMENTAL. Más fiel a la imagen vista desde su mismo ángulo, pero reconstruye en el marco de la cámara: el modelo sale inclinado, y las vistas isométricas se deforman y rellenan volumen falso por debajo. No sirve para sacar varias direcciones. Licencia MIT.",
+      "files": {
+        "diffusion_models": ["pixal3d_int8_convrot.safetensors|pixal3d_bf16.safetensors"],
+        "vae": ["trellis_2_shape_vae_bf16.safetensors", "trellis_2_texture_vae_bf16.safetensors"],
+        "clip_vision": ["dino_v3_L_naf_fp32.safetensors"],
+        "background_removal": ["birefnet.safetensors"]
+      },
+      "params": {
+        "cascade": 1024,
+        "remesh": 512,
+        "remesh_precluster": 2000000,
+        "pad_factor": 1.1,
+        "fov": 20.0,
+        "quality": "juego",
+        "qualities": {
+          "juego": {"label": "Juego · 60 000 caras, textura 1024", "faces": 60000, "texture": 1024},
+          "detalle": {"label": "Detalle · 200 000 caras, textura 2048", "faces": 200000, "texture": 2048}
+        },
+        "timeout": 1800
+      }
     }
   ]
 }

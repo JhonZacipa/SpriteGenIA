@@ -35,6 +35,7 @@ from spritegen.generate import (
     load_config,
     run_workflow_all,
     slugify,
+    switch_family,
 )
 from spritegen.palette import extract_palette
 from spritegen.pixelize import pixelize
@@ -148,6 +149,8 @@ def animate_video_sprite(
         cycle_seconds = 0.0 if raw_output else CYCLE_SECONDS
 
     ensure_server(server)
+    # Si lo último fue un modelo 3D, se descarga antes de cargar los expertos
+    switch_family(server, "video")
     # Imagen de arranque: el raw compuesto sobre blanco, al tamaño del video
     start = Image.open(base_raw).convert("RGBA")
     canvas = Image.new("RGB", start.size, (255, 255, 255))
@@ -239,6 +242,7 @@ def animate_video_sprite(
             # pixel art se queda en GIF, que ahí es lo estándar y basta
             anim_format="webp",
             raw_video=True,
+            engine=engine_id,
         )
 
     indices = _cycle_indices(total, frames_out, fps, cycle_seconds)
@@ -281,4 +285,5 @@ def animate_video_sprite(
         seed=seed,
         video_frames=video_imgs,
         video_fps=fps,
+        engine=engine_id,
     )

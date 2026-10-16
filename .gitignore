@@ -52,7 +52,9 @@ config/tokens.json
 
 # Artefactos de herramientas de desarrollo
 .playwright-mcp/
-.claude/settings.local.json
+# Configuracion local de Claude Code (launch.json para el preview y los
+# permisos). Se quedo fuera del repo a proposito.
+.claude/
 
 # Guia interna de Claude Code: contiene el contexto del autor (destino de
 # los assets, hardware, decisiones) y los gotchas del proyecto. Se queda en
@@ -65,3 +67,14 @@ desktop.ini
 .DS_Store
 .idea/
 .vscode/
+
+# Impeccable: ajustes locales de esta maquina y material de trabajo del rediseno
+.impeccable/config.local.json
+.impeccable/review/
+.impeccable/mocks/
+
+# Perfiles temporales del navegador sin ventana (spritegen bake3d)
+.cache/
+
+# Dependencias de Node de gltf-transform (se instalan con npm install en tools/gltf)
+tools/gltf/node_modules/

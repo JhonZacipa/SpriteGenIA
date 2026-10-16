@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-31T00:00:00Z",
+  "title": "Design System: SpriteGen",
+  "extensions": {
+    "colorMeta": {
+      "camera": {
+        "role": "primary",
+        "displayName": "Camera Red",
+        "canonical": "#c8392b",
+        "tonalRamp": [
+          "#2a0c08",
+          "#4a1610",
+          "#6b2019",
+          "#8d2b21",
+          "#c8392b",
+          "#dd6a5e",
+          "#ec9d95",
+          "#f8d5d1"
+        ]
+      },
+      "camera-hi": {
+        "role": "primary",
+        "displayName": "Camera Red, Lit",
+        "canonical": "#d1402f",
+        "tonalRamp": [
+          "#2c0d09",
+          "#4d1811",
+          "#6f2219",
+          "#912e21",
+          "#d1402f",
+          "#e37164",
+          "#f0a49a",
+          "#fad8d4"
+        ]
+      },
+      "p-animation": {
+        "role": "secondary",
+        "displayName": "Pencil Amber",
+        "canonical": "#d8a54c",
+        "tonalRamp": [
+          "#2b1f0a",
+          "#4a3612",
+          "#6a4d1b",
+          "#8b6624",
+          "#d8a54c",
+          "#e5bd7c",
+          "#efd6ac",
+          "#f9eedb"
+        ]
+      },
+      "p-sprite": {
+        "role": "tertiary",
+        "displayName": "Sprite Blue",
+        "canonical": "#6d9dd8",
+        "tonalRamp": [
+          "#0e1a28",
+          "#182d45",
+          "#234163",
+          "#2f5681",
+          "#6d9dd8",
+          "#93b8e4",
+          "#b9d2ee",
+          "#e0ecf8"
+        ]
+      },
+      "p-terrain": {
+        "role": "tertiary",
+        "displayName": "Terrain Green",
+        "canonical": "#5fa87b",
+        "tonalRamp": [
+          "#0c1d14",
+          "#153123",
+          "#1f4632",
+          "#2a5c42",
+          "#5fa87b",
+          "#8bc19f",
+          "#b5d8c2",
+          "#e0efe6"
+        ]
+      },
+      "p-tileset": {
+        "role": "tertiary",
+        "displayName": "Tileset Teal",
+        "canonical": "#4fa8a0",
+        "tonalRamp": [
+          "#091d1c",
+          "#0f3230",
+          "#164745",
+          "#1e5d5a",
+          "#4fa8a0",
+          "#80c2bc",
+          "#aedad6",
+          "#dcefed"
+        ]
+      },
+      "board-0": {
+        "role": "neutral",
+        "displayName": "Board Black",
+        "canonical": "#100e0b",
+        "tonalRamp": [
+          "#100e0b",
+          "#17140f",
+          "#201c15",
+          "#2b261d",
+          "#3a3327",
+          "#524734",
+          "#8f8677",
+          "#efe9dc"
+        ]
+      },
+      "board-1": {
+        "role": "neutral",
+        "displayName": "Board",
+        "canonical": "#17140f"
+      },
+      "board-2": {
+        "role": "neutral",
+        "displayName": "Board, Raised",
+        "canonical": "#201c15"
+      },
+      "board-3": {
+        "role": "neutral",
+        "displayName": "Board, Lifted",
+        "canonical": "#2b261d"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#3a3327"
+      },
+      "rule-2": {
+        "role": "neutral",
+        "displayName": "Rule, Bright",
+        "canonical": "#524734"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Bone Ink",
+        "canonical": "#efe9dc"
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Bone Ink, Second",
+        "canonical": "#b8ae99"
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Bone Ink, Faint",
+        "canonical": "#8f8677"
+      },
+      "glass": {
+        "role": "neutral",
+        "displayName": "Lit Glass",
+        "canonical": "#f2ece0",
+        "tonalRamp": [
+          "#1a1712",
+          "#2d2921",
+          "#463f32",
+          "#6b6252",
+          "#968b76",
+          "#c2b8a3",
+          "#e4dccb",
+          "#f2ece0"
+        ]
+      },
+      "glass-2": {
+        "role": "neutral",
+        "displayName": "Lit Glass, Checker",
+        "canonical": "#e4dccb"
+      },
+      "glass-ink": {
+        "role": "neutral",
+        "displayName": "Glass Ink",
+        "canonical": "#1a1712"
+      },
+      "glass-off": {
+        "role": "neutral",
+        "displayName": "Glass, Light Off",
+        "canonical": "#24211a"
+      },
+      "glass-off-2": {
+        "role": "neutral",
+        "displayName": "Glass, Light Off Checker",
+        "canonical": "#2d2921"
+      },
+      "camera-dim": {
+        "role": "primary",
+        "displayName": "Camera Red, Wash",
+        "canonical": "rgba(200, 57, 43, 0.18)"
+      },
+      "mark-dim": {
+        "role": "secondary",
+        "displayName": "Pencil Amber, Wash",
+        "canonical": "rgba(216, 165, 76, 0.15)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Title Block",
+        "purpose": "The peg-bar wordmark, set in the mono at 700/14px with 0.2em tracking over an 8.5px line that prints the real archive count. The page's only display moment; there is exactly one."
+      },
+      "title": {
+        "displayName": "Sheet Head / Label",
+        "purpose": "Uppercase micro-sans for sheet heads, panel heads and field labels. Tightens to 10px/0.08em in the pinned Registro."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Page default prose and help notes. The glass empty state runs 13px/1.65 capped at 46ch."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Button and tab labels. Minis and tabs step down to 11-12px; the camera primary is the only weight 600."
+      },
+      "datum": {
+        "displayName": "Datum",
+        "purpose": "Every number a person compares: the spec line, exposure-sheet values, frame rows, leaf meta, job clock, scale ruler, and the numeric/seed inputs. Always tabular-nums."
+      }
+    },
+    "shadows": [
+      {
+        "name": "peg-hole",
+        "value": "inset 0 1px 1px rgba(0,0,0,.8)",
+        "purpose": "The drilled register holes in the peg bar. Inset only."
+      },
+      {
+        "name": "sheet-on-glass",
+        "value": "0 0 0 1px rgba(0,0,0,.5), 0 18px 40px -18px rgba(0,0,0,.8)",
+        "purpose": "The single lifted object on the page: the lit glass above the board."
+      },
+      {
+        "name": "camera-key-bevel",
+        "value": "0 1px 0 rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18)",
+        "purpose": "A 1px seated bevel on the camera primaries only. A key you press, not a floating card."
+      },
+      {
+        "name": "modal",
+        "value": "0 28px 60px -20px rgba(0,0,0,.9)",
+        "purpose": "The only true overlay in the system, over a rgba(8,7,5,.74) shade. Never runs during a job."
+      },
+      {
+        "name": "mark-sheet-tab",
+        "value": "inset 0 2px 0 #d8a54c",
+        "purpose": "The amber mark on the active sheet tab; an inset rule, not elevation."
+      },
+      {
+        "name": "mark-frame-row",
+        "value": "inset 2px 0 0 #d8a54c",
+        "purpose": "The playhead on the active exposure-sheet frame row."
+      },
+      {
+        "name": "mark-view-setting",
+        "value": "inset 0 0 0 1px #524734",
+        "purpose": "The neutral mark a view setting takes instead of amber (active scale-ruler step)."
+      },
+      {
+        "name": "rune-drop",
+        "value": "drop-shadow(0 3px 6px rgba(0,0,0,.45))",
+        "purpose": "Seats the runic corner sprites against the glass."
+      }
+    ],
+    "motion": [
+      {
+        "name": "t",
+        "value": "170ms cubic-bezier(.22,1,.36,1)",
+        "purpose": "The only transition in the system. State-carrying colour, background, border and small transform changes. No entrance choreography."
+      },
+      {
+        "name": "progress-fill",
+        "value": "transform 300ms linear",
+        "purpose": "The one documented exception: the job progress rail must read as elapsed time, not as an eased flourish."
+      },
+      {
+        "name": "pulse",
+        "value": "@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } } 1.6s ease-in-out infinite",
+        "purpose": "The running job lamp. The only keyframe animation in the build."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media (prefers-reduced-motion: reduce) { animation-duration: .01ms; transition-duration: .01ms }",
+        "purpose": "Neutralizes every transition and animation globally."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "desk-narrow",
+        "value": "1500px"
+      },
+      {
+        "name": "tagline-drop",
+        "value": "1400px"
+      },
+      {
+        "name": "fold",
+        "value": "1240px"
+      },
+      {
+        "name": "compact",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Camera Primary Button",
+      "kind": "button",
+      "refersTo": "button-camera",
+      "description": "The generate action — the only element type allowed to wear camera red. One per sheet.",
+      "html": "<button class=\"ds-btn-camera\"><svg class=\"ds-ic\" viewBox=\"0 0 24 24\"><path fill=\"currentColor\" d=\"M12 1c6.075 0 11 4.925 11 11s-4.925 11-11 11S1 18.075 1 12S5.925 1 12 1M8.75 16.5l8-4.5l-8-4.5z\"/></svg> Generar</button>",
+      "css": ".ds-btn-camera { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px 14px; font: 600 13px/1.2 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: #fff; background: var(--camera, #c8392b); border: 1px solid var(--camera-hi, #d1402f); border-radius: var(--r, 3px); cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18); transition: background 170ms cubic-bezier(.22,1,.36,1), border-color 170ms cubic-bezier(.22,1,.36,1), transform 170ms cubic-bezier(.22,1,.36,1); } .ds-btn-camera:hover { background: var(--camera-hi, #d1402f); border-color: #e8563f; } .ds-btn-camera:active { transform: translateY(1px); } .ds-btn-camera:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: 2px; } .ds-ic { width: 16px; height: 16px; flex: none; }"
+    },
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Every action that does not spend GPU time. Lifted board with a bright hairline; presses 1px on active.",
+      "html": "<button class=\"ds-btn\">Guardar estilo</button><button class=\"ds-btn\" disabled>No disponible</button>",
+      "css": ".ds-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px 14px; margin-bottom: 9px; font: 500 13px/1.2 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink, #efe9dc); background: var(--board-3, #2b261d); border: 1px solid var(--rule-2, #524734); border-radius: var(--r, 3px); cursor: pointer; transition: background 170ms cubic-bezier(.22,1,.36,1), border-color 170ms cubic-bezier(.22,1,.36,1), transform 170ms cubic-bezier(.22,1,.36,1); } .ds-btn:hover { background: #35301f; border-color: #6b5e46; } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: 2px; } .ds-btn:disabled { cursor: not-allowed; color: var(--ink-3, #8f8677); background: var(--board-2, #201c15); border-color: var(--rule, #3a3327); border-style: dashed; }"
+    },
+    {
+      "name": "Struck Take (destructive)",
+      "kind": "button",
+      "refersTo": "button-side",
+      "description": "Deletion. Carries no ink: on hover the label is struck through over a 135 degree hazard hatch, and a confirm dialog names the consequence.",
+      "html": "<button class=\"ds-btn-strike\"><svg class=\"ds-ic\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"square\"><path d=\"M21 5H3m2 0h14l-.5 17h-13zm3.5-3h7v3h-7zM12 9v9\"/></svg> Eliminar del archivo</button>",
+      "css": ".ds-btn-strike { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; font: 500 12.5px/1.2 var(--sans, \"Segoe UI\", system-ui, sans-serif); text-align: left; color: var(--ink-2, #b8ae99); background: var(--board-1, #17140f); border: 1px solid var(--rule, #3a3327); border-radius: var(--r, 3px); cursor: pointer; transition: background 170ms cubic-bezier(.22,1,.36,1), border-color 170ms cubic-bezier(.22,1,.36,1), color 170ms cubic-bezier(.22,1,.36,1); } .ds-btn-strike:hover { color: var(--ink, #efe9dc); border-color: var(--rule-2, #524734); background: repeating-linear-gradient(135deg, transparent 0 7px, rgba(255,255,255,.05) 7px 14px), var(--board-3, #2b261d); text-decoration: line-through; text-decoration-color: var(--ink-2, #b8ae99); text-decoration-thickness: 1px; } .ds-btn-strike:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: 2px; } .ds-ic { width: 16px; height: 16px; flex: none; }"
+    },
+    {
+      "name": "Field with Help",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A recessed well under an uppercase micro-sans label with its lowercase hint and the generated round ? button. Focus turns the border amber and lifts the well one tone.",
+      "html": "<div class=\"ds-fld\"><span class=\"ds-lbl\">Descripción del sprite <span class=\"ds-hint\">en inglés</span><button class=\"ds-help\" aria-label=\"Qué es esto\">?</button></span><textarea class=\"ds-input\" rows=\"2\" placeholder=\"medieval house with thatched roof…\"></textarea><p class=\"ds-help-note\">Qué quieres generar, escrito en inglés. El estilo lo pone la plantilla global.</p></div>",
+      "css": ".ds-fld { display: flex; flex-direction: column; gap: 5px; } .ds-lbl { display: flex; align-items: center; gap: 6px; font: 500 10.5px/1.3 var(--sans, \"Segoe UI\", system-ui, sans-serif); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2, #b8ae99); } .ds-hint { text-transform: none; letter-spacing: .02em; color: var(--ink-3, #8f8677); font-weight: 400; } .ds-help { flex: none; width: 15px; height: 15px; padding: 0; margin-left: auto; display: grid; place-items: center; font: 600 10px/1 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink-3, #8f8677); background: transparent; border: 1px solid var(--rule-2, #524734); border-radius: 50%; cursor: help; transition: color 170ms cubic-bezier(.22,1,.36,1), background 170ms cubic-bezier(.22,1,.36,1), border-color 170ms cubic-bezier(.22,1,.36,1); } .ds-help:hover { color: var(--board-0, #100e0b); background: var(--p-animation, #d8a54c); border-color: var(--p-animation, #d8a54c); } .ds-input { width: 100%; font: 400 13px/1.45 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink, #efe9dc); background: var(--board-0, #100e0b); border: 1px solid var(--rule, #3a3327); border-radius: var(--r, 3px); padding: 8px 10px; caret-color: var(--p-animation, #d8a54c); resize: vertical; transition: border-color 170ms cubic-bezier(.22,1,.36,1), background 170ms cubic-bezier(.22,1,.36,1); } .ds-input::placeholder { color: var(--ink-3, #8f8677); opacity: 1; } .ds-input:hover { border-color: var(--rule-2, #524734); } .ds-input:focus { outline: none; border-color: var(--p-animation, #d8a54c); background: var(--board-1, #17140f); } .ds-help-note { font-size: 12px; line-height: 1.5; color: var(--ink-2, #b8ae99); padding: 7px 0 7px 10px; border-left: 1px solid var(--p-animation, #d8a54c); margin: 0; }"
+    },
+    {
+      "name": "Sheet Tabs",
+      "kind": "nav",
+      "refersTo": "sheet-tab",
+      "description": "The rare-sheet drawer: folder tabs seated on the drawer body. Active takes the recessed board and the amber inset rule.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-stab ds-active\">Klein</button><button class=\"ds-stab\">Terreno</button><button class=\"ds-stab\">Efectos</button><button class=\"ds-stab\">Estilo</button></div><div class=\"ds-drawer\">Cuerpo de la hoja</div>",
+      "css": ".ds-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 0 10px; background: var(--board-2, #201c15); } .ds-stab { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 7px 3px; font: 500 11px/1 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink-3, #8f8677); background: var(--board-1, #17140f); border: 1px solid var(--rule, #3a3327); border-bottom: none; border-radius: 3px 3px 0 0; cursor: pointer; white-space: nowrap; transition: color 170ms cubic-bezier(.22,1,.36,1), background 170ms cubic-bezier(.22,1,.36,1); } .ds-stab:hover { color: var(--ink, #efe9dc); background: var(--board-0, #100e0b); } .ds-stab.ds-active { color: var(--ink, #efe9dc); background: var(--board-0, #100e0b); box-shadow: inset 0 2px 0 var(--p-animation, #d8a54c); } .ds-stab:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: 2px; } .ds-drawer { padding: 13px 14px 14px; font: 400 13px/1.5 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink-2, #b8ae99); background: var(--board-0, #100e0b); border-top: 1px solid var(--rule, #3a3327); }"
+    },
+    {
+      "name": "Scale Ruler",
+      "kind": "nav",
+      "refersTo": "ruler-button",
+      "description": "A segmented mono control for zoom. The canonical example of a VIEW SETTING: its active step takes a neutral raised fill, never the amber mark.",
+      "html": "<div class=\"ds-ruler\"><button class=\"ds-rule-btn ds-active\">Ajustar</button><button class=\"ds-rule-btn\">×1</button><button class=\"ds-rule-btn\">×2</button><button class=\"ds-rule-btn\">×4</button><button class=\"ds-rule-btn\">×6</button></div>",
+      "css": ".ds-ruler { display: inline-flex; border: 1px solid var(--rule, #3a3327); border-radius: var(--r, 3px); overflow: hidden; background: var(--board-0, #100e0b); } .ds-rule-btn { padding: 5px 9px; font: 500 11.5px/1 var(--mono, Consolas, ui-monospace, monospace); font-variant-numeric: tabular-nums; color: var(--ink-3, #8f8677); background: transparent; border: none; border-right: 1px solid var(--rule, #3a3327); cursor: pointer; transition: color 170ms cubic-bezier(.22,1,.36,1), background 170ms cubic-bezier(.22,1,.36,1); } .ds-rule-btn:last-child { border-right: none; } .ds-rule-btn:hover { color: var(--ink, #efe9dc); background: var(--board-2, #201c15); } .ds-rule-btn.ds-active { color: var(--ink, #efe9dc); background: var(--board-3, #2b261d); box-shadow: inset 0 0 0 1px var(--rule-2, #524734); } .ds-rule-btn:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: -2px; }"
+    },
+    {
+      "name": "Archive Filter Pill",
+      "kind": "chip",
+      "refersTo": "pill",
+      "description": "The archive legend: each pill carries its 7px pencil dot. Selected takes a raised fill and a brighter hairline — no amber, because a filter is a view setting.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-pill ds-active\">Todo</button><button class=\"ds-pill\"><i class=\"ds-pencil ds-p-sprite\"></i> Sprites</button><button class=\"ds-pill\"><i class=\"ds-pencil ds-p-anim\"></i> Animaciones</button><button class=\"ds-pill\"><i class=\"ds-pencil ds-p-terrain\"></i> Terreno</button></div>",
+      "css": ".ds-pills { display: flex; gap: 4px; flex-wrap: wrap; } .ds-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; font: 500 11.5px/1.4 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink-3, #8f8677); background: transparent; border: 1px solid var(--rule, #3a3327); border-radius: 99px; cursor: pointer; transition: color 170ms cubic-bezier(.22,1,.36,1), background 170ms cubic-bezier(.22,1,.36,1), border-color 170ms cubic-bezier(.22,1,.36,1); } .ds-pill:hover { color: var(--ink, #efe9dc); border-color: var(--rule-2, #524734); } .ds-pill.ds-active { color: var(--ink, #efe9dc); background: var(--board-2, #201c15); border-color: var(--rule-2, #524734); } .ds-pill:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: 2px; } .ds-pencil { width: 7px; height: 7px; border-radius: 50%; flex: none; } .ds-p-sprite { background: var(--p-sprite, #6d9dd8); } .ds-p-anim { background: var(--p-animation, #d8a54c); } .ds-p-terrain { background: var(--p-terrain, #5fa87b); }"
+    },
+    {
+      "name": "Archive Leaf",
+      "kind": "card",
+      "refersTo": "archive-leaf",
+      "description": "One piece in the archive bin, read by its labelled edge before it is opened: checkered thumbnail, name in sans, meta in tabular mono with its pencil dot. Tools fade in on hover.",
+      "html": "<button class=\"ds-leaf\"><span class=\"ds-leaf-thumb\"></span><span class=\"ds-leaf-txt\"><span class=\"ds-leaf-name\">caballero_idle_v3</span><span class=\"ds-leaf-meta\"><i class=\"ds-pencil ds-p-anim\"></i> 128 px · 8 f · 16 fps</span></span><span class=\"ds-leaf-tools\"><span class=\"ds-leaf-tool\">★</span><span class=\"ds-leaf-tool\">👁</span></span></button>",
+      "css": ".ds-leaf { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 11px; align-items: center; width: 260px; padding: 5px; background: var(--board-1, #17140f); border: 1px solid var(--rule, #3a3327); border-radius: var(--r, 3px); cursor: pointer; text-align: left; position: relative; transition: background 170ms cubic-bezier(.22,1,.36,1), border-color 170ms cubic-bezier(.22,1,.36,1), transform 170ms cubic-bezier(.22,1,.36,1); } .ds-leaf:hover { background: var(--board-2, #201c15); border-color: var(--rule-2, #524734); transform: translateY(-1px); } .ds-leaf:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: 2px; } .ds-leaf-thumb { width: 56px; height: 56px; border-radius: 2px; background: repeating-conic-gradient(#242019 0 25%, #2c2820 0 50%) 0 0 / 11px 11px; } .ds-leaf-txt { min-width: 0; display: block; } .ds-leaf-name { display: block; font: 400 12px/1.3 var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink, #efe9dc); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-leaf-meta { display: flex; align-items: center; gap: 6px; font: 400 10px/1.4 var(--mono, Consolas, ui-monospace, monospace); font-variant-numeric: tabular-nums; color: var(--ink-3, #8f8677); margin-top: 1px; } .ds-pencil { width: 6px; height: 6px; border-radius: 50%; flex: none; } .ds-p-anim { background: var(--p-animation, #d8a54c); } .ds-leaf-tools { position: absolute; top: 3px; right: 3px; display: flex; gap: 2px; opacity: 0; transition: opacity 170ms cubic-bezier(.22,1,.36,1); } .ds-leaf:hover .ds-leaf-tools, .ds-leaf:focus-within .ds-leaf-tools { opacity: 1; } .ds-leaf-tool { width: 19px; height: 19px; display: grid; place-items: center; font-size: 10px; color: var(--ink-2, #b8ae99); background: var(--board-0, #100e0b); border: 1px solid var(--rule-2, #524734); border-radius: 2px; }"
+    },
+    {
+      "name": "Job Box",
+      "kind": "custom",
+      "refersTo": "peg-bar job printer",
+      "description": "The machine printing its own state in the peg bar — idle, run, done, fail. It replaces the blocking overlay: nothing may cover the application while a job runs.",
+      "html": "<div class=\"ds-job\" data-state=\"run\"><span class=\"ds-job-lamp\"></span><span class=\"ds-job-text\">Generando sprite…</span><span class=\"ds-job-clock\">04:12</span><span class=\"ds-job-track\"><span class=\"ds-job-fill\"></span></span></div>",
+      "css": ".ds-job { display: inline-flex; align-items: center; gap: 10px; padding: 5px 12px; background: var(--board-1, #17140f); border: 1px solid var(--rule-2, #524734); border-radius: var(--r, 3px); } .ds-job-lamp { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--p-animation, #d8a54c); animation: ds-pulse 1.6s ease-in-out infinite; } .ds-job-text { font-size: 12.5px; font-family: var(--sans, \"Segoe UI\", system-ui, sans-serif); color: var(--ink, #efe9dc); white-space: nowrap; } .ds-job-clock { font: 500 12px/1 var(--mono, Consolas, ui-monospace, monospace); font-variant-numeric: tabular-nums; color: var(--ink-3, #8f8677); } .ds-job-track { flex: none; width: 128px; height: 4px; background: var(--board-3, #2b261d); border-radius: 99px; overflow: hidden; } .ds-job-fill { display: block; height: 100%; width: 100%; transform: scaleX(.42); transform-origin: left center; background: var(--camera, #c8392b); transition: transform 300ms linear; } .ds-job[data-state=\"done\"] { border-color: var(--camera, #c8392b); background: rgba(200,57,43,.18); } .ds-job[data-state=\"done\"] .ds-job-lamp { background: var(--camera, #c8392b); animation: none; } @keyframes ds-pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } } @media (prefers-reduced-motion: reduce) { .ds-job-lamp { animation: none } }"
+    },
+    {
+      "name": "Exposure Sheet Frame Row",
+      "kind": "custom",
+      "refersTo": "xsheet-frame",
+      "description": "One row per frame in the ruled exposure sheet. The active row takes the amber wash plus a 2px amber playhead on its left edge; arrow keys step it.",
+      "html": "<div class=\"ds-xs\"><button class=\"ds-xs-frame\"><span class=\"ds-n\">06</span><span class=\"ds-bar\"></span><span>0.06 s</span></button><button class=\"ds-xs-frame ds-active\"><span class=\"ds-n\">07</span><span class=\"ds-bar\"></span><span>0.07 s</span></button><button class=\"ds-xs-frame\"><span class=\"ds-n\">08</span><span class=\"ds-bar\"></span><span>0.08 s</span></button></div>",
+      "css": ".ds-xs { display: flex; flex-direction: column; width: 260px; border: 1px solid var(--rule, #3a3327); border-radius: var(--r, 3px); background: var(--board-0, #100e0b); overflow: hidden; } .ds-xs-frame { display: flex; align-items: center; gap: 9px; padding: 4px 8px; border: none; border-bottom: 1px solid var(--rule, #3a3327); font: 400 11.5px/1 var(--mono, Consolas, ui-monospace, monospace); font-variant-numeric: tabular-nums; color: var(--ink-3, #8f8677); background: transparent; width: 100%; text-align: left; cursor: pointer; transition: background 170ms cubic-bezier(.22,1,.36,1), color 170ms cubic-bezier(.22,1,.36,1); } .ds-xs-frame:last-child { border-bottom: none; } .ds-xs-frame:hover { background: var(--board-2, #201c15); color: var(--ink, #efe9dc); } .ds-xs-frame.ds-active { background: rgba(216,165,76,.15); color: var(--ink, #efe9dc); box-shadow: inset 2px 0 0 var(--p-animation, #d8a54c); } .ds-xs-frame:focus-visible { outline: 2px solid var(--p-animation, #d8a54c); outline-offset: -2px; } .ds-n { min-width: 22px; color: var(--ink-2, #b8ae99); } .ds-bar { flex: 1; height: 1px; background: var(--rule, #3a3327); }"
+    },
+    {
+      "name": "Light Table Glass",
+      "kind": "custom",
+      "refersTo": "the lit field",
+      "description": "The one luminous surface: a 26px two-tone checker (not a flat field, because every sprite is a transparent PNG), pinned by four runic corner sprites. A Luz toggle swaps to the dark checker for judging against a map ground.",
+      "html": "<div class=\"ds-glass\" data-lit=\"on\"><div class=\"ds-stage\"><div class=\"ds-sprite\"></div></div></div>",
+      "css": ".ds-glass { position: relative; width: 320px; height: 200px; border: 1px solid var(--rule-2, #524734); border-radius: var(--r-lg, 5px); background: repeating-conic-gradient(var(--glass-2, #e4dccb) 0 25%, var(--glass, #f2ece0) 0 50%) 0 0 / 26px 26px; box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 18px 40px -18px rgba(0,0,0,.8); transition: background-color 170ms cubic-bezier(.22,1,.36,1); } .ds-glass[data-lit=\"off\"] { background: repeating-conic-gradient(var(--glass-off-2, #2d2921) 0 25%, var(--glass-off, #24211a) 0 50%) 0 0 / 26px 26px; } .ds-stage { position: absolute; inset: 0; display: grid; place-items: center; padding: 26px; } .ds-sprite { width: 96px; height: 96px; background: #1a1712; image-rendering: pixelated; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Mesa de Luz",
+    "overview": "A traditional animation light table. The board is dark, worn wood; the glass is the one luminous field on the page, and everything the user actually judges — a pixel sprite with a transparent background — sits on it. Everything else is stationery arranged around that glass: sheets hung from a peg bar, a ruled exposure sheet down the right, an archive bin along the bottom with a labelled edge per piece. The interface never competes with the artwork for brightness.\n\nThe system is dense and instrumental, not spacious. This is a tool kept open for hours with a game engine on the other monitor: every parameter that matters is visible at once, the machine prints its own state in the peg bar instead of blocking the app behind a spinner, and no panel hides a number behind an accordion. Density here is a courtesy, not a compromise.\n\nMaterials are flat paper on board: 1px rules, 3px and 5px corners, no gradients, no blur, no glass or frosted panels anywhere. Depth comes from four steps of board tone and a hairline, not from shadow. Color is information: four \"pencil\" hues classify content kinds, one amber marks what is being pointed at, and one camera red is reserved by law to the act of spending GPU time. The world's only decorative object is the runic corner sprite pinning the glass — and the user drew it with this very tool.",
+    "keyCharacteristics": [
+      "One luminous surface (the glass); everything else is dark board.",
+      "Camera red is rationed to the generate action, the progress rail and the done lamp.",
+      "Pencil amber marks a piece; a view setting deliberately gets no mark.",
+      "Every datum is monospace with tabular figures; every label is uppercase micro-sans.",
+      "Flat by law: 1px rules and tonal layering, no gradients, no blur, no glass.",
+      "Offline by law: system font stacks and inline SVG symbols, never a CDN.",
+      "Motion is one 170ms token, state-carrying only; no entrance choreography."
+    ],
+    "rules": [
+      {
+        "name": "The Camera Note Rule",
+        "body": "Camera red belongs to what puts the GPU to work and nothing else: the .btn.camera primaries, the job progress fill, and the done lamp and its wash. A destructive action, an error, a badge, a chart or a highlight may never borrow it. Audit test: if a red element does not either start GPU work or report GPU work, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Pencil Mark Rule",
+        "body": "Amber marks what points at a piece — the active sheet, the current frame, the focused control, the favourited or hidden item. A view setting does not take the mark: the scale ruler (Ajustar/×1/×2/×4/×6) and the archive filter pills mark their selection with a neutral raised fill and a brighter hairline instead. The one deliberate exception is the global reveal switch (#btnReveal.on), which takes a full amber fill on a dark label, because leaving hidden content revealed has consequences and must be loud.",
+        "section": "colors"
+      },
+      {
+        "name": "The Struck Take Rule",
+        "body": "Destruction carries no ink at all. Delete reads as a cancelled take: on hover the label gets a 1px line-through in Ink-2 over a neutral 135° hazard hatch (rgba(255,255,255,.05) stripes on the lifted board), and a confirm dialog naming the consequence backs it. Never color a destructive control.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Lit Field Rule",
+        "body": "The glass is the brightest thing on the page and stays that way. No other surface may be lighter than Board-3 at rest.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Datum Rule",
+        "body": "Anything a person compares between two rows — a size, a seed, a frame index, a count, a duration — is set in the mono with font-variant-numeric: tabular-nums. A number set in the sans is a mistake.",
+        "section": "typography"
+      },
+      {
+        "name": "The Single Voice Rule",
+        "body": "There is one display element on the page: the peg-bar title block. New surfaces take their titles from the uppercase micro-sans Title role, never from a second large face.",
+        "section": "typography"
+      },
+      {
+        "name": "The English Prompt Hint Rule",
+        "body": "The interface is Spanish; generation prompts are English. Every field that takes an English prompt labels it with an inline (en inglés) hint in the lowercase, untracked .hint treatment — never by translating the label.",
+        "section": "typography"
+      },
+      {
+        "name": "The Never-Cover Rule",
+        "body": "Work in progress is printed in the peg bar — lamp, text, clock, progress rail — and never as an overlay. Nothing may block the application while the machine runs; a job can last thirty minutes and the user must keep working through it.",
+        "section": "layout"
+      },
+      {
+        "name": "The Fold, Don't Shrink Rule",
+        "body": "Under pressure the table folds a panel away (the drawer, the exposure-sheet spine, the archive) rather than compressing type or the six pinned numbers.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Board Rule",
+        "body": "New surfaces are separated by a board tone step and a 1px rule. Reaching for a drop shadow, a gradient or a blur to separate two panels is out of world.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Paper Corner Rule",
+        "body": "A sheet's corner is not round: 3px on small things, 5px on panels, 2px on chips. Nothing between 6px and 98px exists in this system.",
+        "section": "shapes"
+      },
+      {
+        "name": "The One Transition Rule",
+        "body": "State changes use --t and nothing else. There is no entrance choreography, no stagger and no scroll animation; an element that moves is answering an input.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do reserve camera red (#c8392b) for what puts the GPU to work: the generate buttons, the progress rail, the done lamp and its wash.",
+      "Do use pencil amber (#d8a54c) to mark what points at a piece — active sheet, current frame, focus, caret, favourite, hidden — and give view settings (scale, filters) a neutral raised fill instead.",
+      "Do set every comparable number in the mono stack with font-variant-numeric: tabular-nums.",
+      "Do separate planes with a board tone step plus a 1px rule (#3a3327 at rest, #524734 when raised or active).",
+      "Do print long-running work in the peg bar and let the user keep working.",
+      "Do ship icons as inline SVG symbols on the shared 24-unit, stroke-width: 2, square-cap sheet, referenced with <use>.",
+      "Do keep the checker under any transparent artwork, and offer the dark checker for judging against a dark ground.",
+      "Do show a destructive action as a struck take — line-through plus the 135° hatch — behind a confirm dialog that names the consequence.",
+      "Do give every new control a data-help explanation in Spanish so wireHelp() can generate its ? and its inline note; label English-prompt fields with the (en inglés) hint.",
+      "Do bump the ?v=YYYYMMDDx query on style.css and app.js in index.html by hand whenever either changes — the server runs without --reload and this is the only cache break.",
+      "Do route all motion through --t, and keep the reduced-motion block intact.",
+      "Do carry the runic corner sprite (app/static/esquina.png) as the glass's register pieces; it was authored by the user with SpriteGen itself and is the only shipping raster."
+    ],
+    "donts": [
+      "Don't put camera red on anything that is not GPU work — not on delete, not on errors, not on badges, not on a chart.",
+      "Don't mark a view setting with amber. The exception is documented and singular: #btnReveal.on takes the amber fill because revealed hidden content must be loud.",
+      "Don't color destruction. It is struck, hatched and confirmed, never red.",
+      "Don't load a font, an icon set or a library from a CDN, or add a build step. The app must run with the network off; use the two system stacks and the inline symbol sheet.",
+      "Don't introduce gradients, blur, backdrop-filter, translucent panels or ambient drop shadows. The four shadows in the system are physical claims (peg hole, sheet on glass, key bevel, modal).",
+      "Don't cover the application with an overlay while a job runs. The modal is for input only.",
+      "Don't add a second display face or a second large type moment; the peg-bar title block is the only one.",
+      "Don't use a radius between 6px and 98px, or a border thicker than 1px.",
+      "Don't position a sprite-sheet frame with rounded pixel offsets; use the percentage formula, or the neighbouring frame bleeds in.",
+      "Don't solve narrow viewports by shrinking type or the six pinned Registro numbers — fold a panel instead.",
+      "Don't let any surface outshine the glass."
+    ]
+  }
+}

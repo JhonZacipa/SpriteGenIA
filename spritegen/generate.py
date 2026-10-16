@@ -15,6 +15,7 @@ import requests
 from PIL import Image
 
 from spritegen import engines as eng
+from spritegen import livefeed
 from spritegen.background import (
     remove_flat_background,
     remove_soft_shadow,
@@ -115,11 +116,20 @@ def ensure_server(server: str, startup_timeout: int = 180) -> None:
             print(f"ComfyUI no está corriendo: arrancándolo ahora (log en {log})...")
             with open(log, "ab") as out:
                 subprocess.Popen(
-                    # --reserve-vram: deja VRAM al escritorio para que el PC
-                    # siga usable mientras genera (a 0 se congela todo)
-                    # --cache-none: no retiene modelos entre generaciones,
-                    # libera ~8 GB de RAM al terminar cada una
-                    [str(python), "main.py", "--reserve-vram", "0.4", "--cache-none"],
+                    # --reserve-vram: reserva mínima (0,1 GB) para el escritorio; casi
+                    # toda la VRAM va a los modelos (a 0 el PC se congela)
+                    # Sin --cache-none (retirado el 20/09/2026): la caché por defecto
+                    # (--cache-ram) retiene los modelos entre generaciones, así el 2º
+                    # clip Wan no recarga los expertos desde disco. Cuesta RAM en reposo
+                    # (~9 GB): apagar el motor al terminar sigue siendo lo recomendado
+                    # --preview-method auto: emite previews del latente por su
+                    # WebSocket (latent2rgb, coste ínfimo) para la miniatura
+                    # en vivo de la GUI (spritegen/livefeed.py)
+                    [
+                        str(python), "main.py",
+                        "--reserve-vram", "0.1",
+                        "--preview-method", "auto",
+                    ],
                     cwd=COMFY_DIR,
                     stdout=out,
                     stderr=subprocess.STDOUT,
@@ -148,13 +158,66 @@ def run_workflow(server: str, workflow: dict[str, Any], timeout: int = 600) -> b
 def run_workflow_all(
     server: str, workflow: dict[str, Any], timeout: int = 600
 ) -> list[bytes]:
-    """Encola el workflow, espera y devuelve TODAS las imágenes (PNG en bytes).
+    """Encola el workflow, espera y devuelve TODAS las imágenes (PNG en bytes)
+    del nodo `save`.
 
     Un workflow de video devuelve cada frame como una imagen del batch."""
+    entry = _run_and_wait(server, workflow, timeout)
+    images = entry.get("outputs", {}).get("save", {}).get("images", [])
+    if not images:
+        raise RuntimeError("ComfyUI terminó el workflow sin devolver ninguna imagen")
+    return [_download(server, info) for info in images]
+
+
+def run_workflow_files(
+    server: str, workflow: dict[str, Any], timeout: int = 600
+) -> dict[str, list[tuple[str, bytes]]]:
+    """Como run_workflow_all, pero devuelve los archivos de TODOS los nodos de
+    salida: {id del nodo: [(nombre, bytes), ...]}.
+
+    Lo necesitan los grafos con más de una salida o con salidas que no son
+    imágenes, como el GLB de SaveGLB (que llega bajo la clave "3d"). Se acepta
+    cualquier lista de ficheros, sea cual sea su clave, porque la v0.40 de
+    ComfyUI cambió el formato de las salidas 3D."""
+    entry = _run_and_wait(server, workflow, timeout)
+    result: dict[str, list[tuple[str, bytes]]] = {}
+    for node_id, outputs in entry.get("outputs", {}).items():
+        for items in outputs.values():
+            if not isinstance(items, list):
+                continue
+            for info in items:
+                if isinstance(info, dict) and info.get("filename"):
+                    result.setdefault(node_id, []).append(
+                        (info["filename"], _download(server, info)))
+    return result
+
+
+def _download(server: str, info: dict[str, Any]) -> bytes:
+    """Baja un archivo de salida de ComfyUI (imagen, GLB...) por /view."""
+    resp = requests.get(
+        f"{server}/view",
+        params={
+            "filename": info["filename"],
+            "subfolder": info.get("subfolder", ""),
+            "type": info.get("type", "output"),
+        },
+        timeout=120,
+    )
+    resp.raise_for_status()
+    return resp.content
+
+
+def _run_and_wait(server: str, workflow: dict[str, Any], timeout: int) -> dict[str, Any]:
+    """Encola el workflow y espera a que ComfyUI lo dé por terminado.
+
+    Devuelve su entrada de /history. ComfyUI solo escribe esa entrada al
+    acabar la ejecución, así que su aparición ya significa «terminado»."""
     try:
         resp = requests.post(
             f"{server}/prompt",
-            json={"prompt": workflow, "client_id": "spritegen"},
+            # El client_id DEBE coincidir con el del WebSocket de livefeed:
+            # ComfyUI dirige progress y previews solo al socket de ese id
+            json={"prompt": workflow, "client_id": livefeed.CLIENT_ID},
             timeout=30,
         )
     except requests.RequestException as exc:
@@ -167,60 +230,87 @@ def run_workflow_all(
     polls = 0
     poll_failures = 0
     job_missing = False
-    while time.time() < deadline:
-        try:
-            history = requests.get(f"{server}/history/{prompt_id}", timeout=30).json()
-            poll_failures = 0
-        except requests.RequestException as exc:
-            # Un hiccup transitorio no debe abandonar el trabajo; si la
-            # conexión no vuelve, se cancela para no dejarlo huérfano en la GPU
-            poll_failures += 1
-            if poll_failures >= 3:
-                _cancel_job(server, prompt_id)
-                raise RuntimeError(
-                    "Se perdió la conexión con ComfyUI a mitad de la generación "
-                    f"({exc}). Revisa {COMFY_DIR / 'comfyui.log'}"
-                ) from exc
-            time.sleep(1.5)
-            continue
-        entry = history.get(prompt_id)
-        if entry:
-            status = entry.get("status", {})
-            if status.get("status_str") == "error":
-                messages = json.dumps(status.get("messages", []))[:1200]
-                raise RuntimeError(f"Error ejecutando el workflow: {messages}")
-            images = entry.get("outputs", {}).get("save", {}).get("images", [])
-            if images:
-                result = []
-                for info in images:
-                    img = requests.get(
-                        f"{server}/view",
-                        params={
-                            "filename": info["filename"],
-                            "subfolder": info.get("subfolder", ""),
-                            "type": info.get("type", "output"),
-                        },
-                        timeout=120,
-                    )
-                    img.raise_for_status()
-                    result.append(img.content)
-                return result
-        # Cada ~12 s se comprueba que el trabajo siga en cola: si ComfyUI se
-        # reinició a mitad, el historial quedaría vacío para siempre
-        polls += 1
-        if polls % 8 == 0 and not entry:
-            if not _job_pending(server, prompt_id):
-                if job_missing:  # segunda comprobación consecutiva sin rastro
+    # livefeed solo informa (paso de muestreo y preview para la GUI); quien
+    # decide cuándo terminó el trabajo sigue siendo el polling de abajo
+    with livefeed.watching(server, prompt_id):
+        while time.time() < deadline:
+            try:
+                history = requests.get(f"{server}/history/{prompt_id}", timeout=30).json()
+                poll_failures = 0
+            except requests.RequestException as exc:
+                # Un hiccup transitorio no debe abandonar el trabajo; si la
+                # conexión no vuelve, se cancela para no dejarlo huérfano en la GPU
+                poll_failures += 1
+                if poll_failures >= 3:
+                    _cancel_job(server, prompt_id)
                     raise RuntimeError(
-                        "ComfyUI perdió el trabajo (¿se reinició el motor a "
-                        "mitad de la generación?). Vuelve a intentarlo."
-                    )
-                job_missing = True
-            else:
-                job_missing = False
-        time.sleep(1.5)
-    _cancel_job(server, prompt_id)
-    raise RuntimeError(f"La generación superó el tiempo máximo ({timeout}s)")
+                        "Se perdió la conexión con ComfyUI a mitad de la generación "
+                        f"({exc}). Revisa {COMFY_DIR / 'comfyui.log'}"
+                    ) from exc
+                time.sleep(1.5)
+                continue
+            entry = history.get(prompt_id)
+            if entry:
+                status = entry.get("status", {})
+                if status.get("status_str") == "error":
+                    raise RuntimeError(f"Error ejecutando el workflow: {_error_text(status)}")
+                return entry
+            # Cada ~12 s se comprueba que el trabajo siga en cola: si ComfyUI se
+            # reinició a mitad, el historial quedaría vacío para siempre
+            polls += 1
+            if polls % 8 == 0 and not entry:
+                if not _job_pending(server, prompt_id):
+                    if job_missing:  # segunda comprobación consecutiva sin rastro
+                        raise RuntimeError(
+                            "ComfyUI perdió el trabajo (¿se reinició el motor a "
+                            "mitad de la generación?). Vuelve a intentarlo."
+                        )
+                    job_missing = True
+                else:
+                    job_missing = False
+            time.sleep(1.5)
+        _cancel_job(server, prompt_id)
+        raise RuntimeError(f"La generación superó el tiempo máximo ({timeout}s)")
+
+
+def _error_text(status: dict[str, Any]) -> str:
+    """El error legible de un workflow fallido: nodo y mensaje de la excepción
+    (p. ej. un OOM de RemeshMesh), en vez de volcar toda la lista de mensajes."""
+    messages = status.get("messages", [])
+    for msg in messages:
+        if not (isinstance(msg, (list, tuple)) and len(msg) == 2):
+            continue
+        kind, data = msg
+        if kind == "execution_error" and isinstance(data, dict):
+            texto = str(data.get("exception_message", "")).strip().splitlines()
+            return f"{data.get('node_type', '?')}: {' '.join(texto[:3])[:600]}"
+    return json.dumps(messages)[:1200]
+
+
+# Familias de modelos pesados que no conviene tener a la vez en la RAM: los
+# dos expertos de Wan ocupan ~21 GB y TRELLIS.2 ~9 GB, y lo que decide el
+# tiempo de una generación es la RAM libre (gotcha 11c)
+_FAMILY = {"current": None}
+
+
+def free_models(server: str) -> None:
+    """Pide a ComfyUI que descargue los modelos y libere su memoria. Nunca lanza."""
+    try:
+        requests.post(f"{server}/free",
+                      json={"unload_models": True, "free_memory": True}, timeout=30)
+    except requests.RequestException:
+        pass
+
+
+def switch_family(server: str, family: str) -> None:
+    """Libera la memoria de ComfyUI al pasar de una familia pesada a otra
+    (vídeo ↔ 3D). Repetir la misma familia no libera nada: así el segundo
+    modelo 3D seguido no recarga los pesos."""
+    previous = _FAMILY["current"]
+    _FAMILY["current"] = family
+    if previous is not None and previous != family:
+        print(f"Cambio de familia de modelos ({previous} → {family}): liberando memoria de ComfyUI...")
+        free_models(server)
 
 
 def _job_pending(server: str, prompt_id: str) -> bool:
